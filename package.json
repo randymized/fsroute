@@ -1,0 +1,48 @@
+{
+  "name": "fsroute",
+  "description": "A filesystem-based router.  Resources are served from filesystem paths that correspond to the URL.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/randymized/fsroute",
+  "author": {
+    "name": "Randy McLaughlin",
+    "email": "ot40ddj02@sneakemail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/randymized/fsroute.git"
+  },
+  "bugs": {
+    "url": "https://github.com/randymized/fsroute/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/randymized/fsroute/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "./index.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt simplemocha"
+  },
+  "devDependencies": {
+    "mocha": "~1.9.0",
+    "should": "~2.1.0",
+    "grunt-contrib-jshint": "~0.4.0",
+    "grunt-simple-mocha": "git://github.com/yaymukund/grunt-simple-mocha.git",
+    "grunt-contrib-watch": "~0.3.1",
+    "grunt": "~0.4.1",
+    "connect": "~2.11.1",
+    "async": "~0.2.9",
+    "request": "~2.27.0"
+  },
+  "keywords": [],
+  "dependencies": {
+    "composable-middleware": "~0.3.0",
+    "underscore": "~1.5.2",
+    "require-directory": "~1.2.0",
+    "send": "~0.1.4"
+  }
+}
