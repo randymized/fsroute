@@ -173,9 +173,6 @@ describe( 'FSRouteFactory', function() {
     it( 'should serve a file from the resource branch and not try to interpret is as javascript', function(done) {
       simple_get_test('/protista.js','includes algae and diatoms',done);
     } );
-    it( 'should serve a file from the public branch and not try to interpret is as javascript', function(done) {
-      simple_get_test('/bacteria.js','lots of these guys',done);
-    } );
     it( 'should run method-specific code at the top level of the code branch', function(done) {
       var roadmap= {
         hello: {
