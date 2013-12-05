@@ -115,14 +115,14 @@ describe( 'FSRouteFactory', function() {
     it( 'should be a function', function() {
       assert(_.isFunction(FSRouteFactory))
     } );
-    it( 'should return a FSRoute constructor function', function() {
-      var FSRoute= new FSRouteFactory(path.join(__dirname,'life'))
-      assert(_.isFunction(FSRoute))
-      FSRoute.name.should.equal('FSRoute')
-      FSRoute.should.have.property('connect_middleware')
-      FSRoute.should.have.property('connect_error_handler')
-      FSRoute.should.have.property('composable_middleware')
-      FSRoute.should.have.property('composable_error_handler')
+    it( 'should return a RequestHandler constructor function', function() {
+      var RequestHandler= new FSRouteFactory(path.join(__dirname,'life'))
+      assert(_.isFunction(RequestHandler))
+      RequestHandler.name.should.equal('RequestHandler')
+      RequestHandler.should.have.property('connect_middleware')
+      RequestHandler.should.have.property('connect_error_handler')
+      RequestHandler.should.have.property('composable_middleware')
+      RequestHandler.should.have.property('composable_error_handler')
     } );
     it( "should start out with fsroute.left being the url's path (less leading slash)", function() {
       var FSRoute= new FSRouteFactory(path.join(__dirname,'life'))
