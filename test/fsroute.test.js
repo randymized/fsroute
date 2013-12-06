@@ -16,7 +16,7 @@ var host = 'localhost'
 var FSRoute = require( '..' );
 
 function an_instance(url_path) {
-  var fsroute= new_life_router()
+  var fsroute= new_testsite_router()
   return fsroute({url:'//localhost:3000/'+url_path},{},function () {
     throw new Error('404')
   })
@@ -77,9 +77,6 @@ function get404(url,done) {
 function new_testsite_router(roadmap) {
   return new FSRoute(path.join(__dirname,'../testsite'),roadmap)
 }
-function new_life_router(roadmap) {
-  return new FSRoute(path.join(__dirname,'life'),roadmap)
-}
 
 function simple_get_test(url,expected,roadmap,done)
 {
@@ -123,7 +120,7 @@ describe( 'FSRoute', function() {
       assert(_.isFunction(FSRoute))
     } );
     it( 'should return a RequestHandler constructor function', function() {
-      var fsRouter= new_life_router()
+      var fsRouter= new_testsite_router()
       fsRouter.RequestHandler.name.should.equal('RequestHandler')
       assert(_.isFunction(fsRouter.RequestHandler))
       fsRouter.should.have.property('connect_middleware')
@@ -132,14 +129,14 @@ describe( 'FSRoute', function() {
       fsRouter.should.have.property('composable_error_handler')
     } );
     it( "should start out with fsroute.left being the url's path (less leading slash)", function() {
-      var fsRouter= new_life_router()
+      var fsRouter= new_testsite_router()
       var inst= new fsRouter.RequestHandler({req:{method:'GET',url:'/animals/vertibrates/mammals'}},noop)
       var right= inst.right
       assert(_.isArray(right))
       right.join('/').should.equal('animals/vertibrates/mammals')
     } );
     it( 'should start out with fsroute.right being an empty array', function() {
-      var fsRouter= new_life_router()
+      var fsRouter= new_testsite_router()
       var inst= new fsRouter.RequestHandler({req:{method:'GET',url:'/animals/vertibrates/mammals'}},noop)
       var left= inst.left
       assert(_.isArray(left))
@@ -147,7 +144,7 @@ describe( 'FSRoute', function() {
     } );
     it( 'should simply 404 if no handler in code and the path does not exist', function(done) {
       serve(
-        new_life_router().connect_middleware,
+        new_testsite_router().connect_middleware,
         [
           function(cb) {
             get404('/fungi',cb)
@@ -158,7 +155,7 @@ describe( 'FSRoute', function() {
     } );
     it( 'should 404 if no handler in code and the resource is not found in the filesystem', function(done) {
       serve(
-        new_life_router().connect_middleware,
+        new_testsite_router().connect_middleware,
         [
           function(cb) {
             get404('/fungi',cb)
