@@ -17,9 +17,7 @@ var FSRoute = require( '..' );
 
 function an_instance(url_path) {
   var fsroute= new_router()
-  return fsroute({url:'//localhost:3000/'+url_path},{},function () {
-    throw new Error('404')
-  })
+  return fsroute({url:'//localhost:3000/'+url_path})
 }
 function noop ()
 {
