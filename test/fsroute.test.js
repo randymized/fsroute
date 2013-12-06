@@ -132,7 +132,6 @@ describe( 'FSRoute', function() {
       fsRouter.should.have.property('composable_error_handler')
     } );
     it( "should start out with fsroute.left being the url's path (less leading slash)", function() {
-      debugger
       var fsRouter= new_life_router()
       var inst= new fsRouter.RequestHandler({req:{method:'GET',url:'/animals/vertibrates/mammals'}},noop)
       var right= inst.right
