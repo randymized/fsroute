@@ -82,7 +82,7 @@ function simple_get_test(url,expected,roadmap,done)
   }
   var FSRoute= new FSRouteFactory(path.join(__dirname,'../testsite'),roadmap)
   serve(
-    FSRoute.connect_middleware,
+    FSRouteFactory.connect_middleware,
     [
       function(cb) {
         get(url,expected,cb)
@@ -100,7 +100,7 @@ function get_404_test(url,roadmap,done)
   }
   var FSRoute= new FSRouteFactory(path.join(__dirname,'../testsite'),roadmap)
   serve(
-    FSRoute.connect_middleware,
+    FSRouteFactory.connect_middleware,
     [
       function(cb) {
         get404(url,cb)
@@ -119,10 +119,10 @@ describe( 'FSRouteFactory', function() {
       var RequestHandler= new FSRouteFactory(path.join(__dirname,'life'))
       assert(_.isFunction(RequestHandler))
       RequestHandler.name.should.equal('RequestHandler')
-      RequestHandler.should.have.property('connect_middleware')
-      RequestHandler.should.have.property('connect_error_handler')
-      RequestHandler.should.have.property('composable_middleware')
-      RequestHandler.should.have.property('composable_error_handler')
+      FSRouteFactory.should.have.property('connect_middleware')
+      FSRouteFactory.should.have.property('connect_error_handler')
+      FSRouteFactory.should.have.property('composable_middleware')
+      FSRouteFactory.should.have.property('composable_error_handler')
     } );
     it( "should start out with fsroute.left being the url's path (less leading slash)", function() {
       var FSRoute= new FSRouteFactory(path.join(__dirname,'life'))
@@ -141,7 +141,7 @@ describe( 'FSRouteFactory', function() {
     it( 'should simply 404 if no handler in code and the path does not exist', function(done) {
       var FSRoute= new FSRouteFactory(path.join(__dirname,'nope'))
       serve(
-        FSRoute.connect_middleware,
+        FSRouteFactory.connect_middleware,
         [
           function(cb) {
             get404('/fungi',cb)
@@ -153,7 +153,7 @@ describe( 'FSRouteFactory', function() {
     it( 'should 404 if no handler in code and the resource is not found in the filesystem', function(done) {
       var FSRoute= new FSRouteFactory(path.join(__dirname,'../testsite'))
       serve(
-        FSRoute.connect_middleware,
+        FSRouteFactory.connect_middleware,
         [
           function(cb) {
             get404('/fungi',cb)
