@@ -9,6 +9,7 @@ var request = require('request');
 var connect= require('connect')
 var async= require('async')
 var _= require('underscore')
+var ComposableMiddleware= require('composable-middleware')
 
 var port= 8889
 var host = 'localhost'
@@ -84,7 +85,7 @@ function simple_get_test(url,expected,roadmap,done)
   }
   var fsRouter= new_router(roadmap)
   serve(
-    fsRouter.connect_middleware,
+    fsRouter.connect_middleware(),
     [
       function(cb) {
         get(url,expected,cb)
@@ -102,7 +103,7 @@ function get_404_test(url,roadmap,done)
   }
   var fsRouter= new_router(roadmap)
   serve(
-    fsRouter.connect_middleware,
+    fsRouter.connect_middleware(),
     [
       function(cb) {
         get404(url,cb)
@@ -142,7 +143,7 @@ describe( 'FSRoute', function() {
     } );
     it( 'should simply 404 if no handler in code and the path does not exist', function(done) {
       serve(
-        new_router().connect_middleware,
+        new_router().connect_middleware(),
         [
           function(cb) {
             get404('/fungi',cb)
@@ -153,7 +154,7 @@ describe( 'FSRoute', function() {
     } );
     it( 'should 404 if no handler in code and the resource is not found in the filesystem', function(done) {
       serve(
-        new_router().connect_middleware,
+        new_router().connect_middleware(),
         [
           function(cb) {
             get404('/fungi',cb)
@@ -202,6 +203,37 @@ describe( 'FSRoute', function() {
         }
       }
       simple_get_test('/foo/bar','bas',roadmap,done);
+    } );
+    it( 'should support two simulaneous routers', function(done) {
+      var fsRouter= new_router({
+        foo: function (next) {
+                this.res.end('bar')
+              }
+      })
+      var fsRouter2= new_router({
+        a: function (next) {
+                this.res.end('b')
+              }
+      })
+
+      serve(
+        new ComposableMiddleware(
+          function(next) {
+            next()
+          },
+          fsRouter.composable_middleware(),
+          fsRouter2.composable_middleware()
+        ),
+        [
+          function(cb) {
+            get('/foo','bar',cb)
+          },
+          function(cb) {
+            get('/a','b',cb)
+          },
+        ],
+        done
+      );
     } );
 
   } );
