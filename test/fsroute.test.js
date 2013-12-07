@@ -16,10 +16,6 @@ var host = 'localhost'
 
 var FSRoute = require( '..' );
 
-function an_instance(url_path) {
-  var fsroute= new_router()
-  return fsroute({url:'//localhost:3000/'+url_path})
-}
 function noop ()
 {
 }
@@ -73,17 +69,17 @@ function get404(url,done) {
   })
 }
 
-function new_router(roadmap) {
-  return new FSRoute(roadmap).set_code_and_resource_roots(path.join(__dirname,'../testsite'))
+function new_router(tree) {
+  return new FSRoute(tree).set_code_and_resource_roots(path.join(__dirname,'../testsite'))
 }
 
-function simple_get_test(url,expected,roadmap,done)
+function simple_get_test(url,expected,tree,done)
 {
   if (arguments.length == 3) {
-    done= roadmap;
-    roadmap= undefined;
+    done= tree;
+    tree= undefined;
   }
-  var fsRouter= new_router(roadmap)
+  var fsRouter= new_router(tree)
   serve(
     fsRouter.connect_middleware(),
     [
@@ -95,13 +91,13 @@ function simple_get_test(url,expected,roadmap,done)
   );
 }
 
-function get_404_test(url,roadmap,done)
+function get_404_test(url,tree,done)
 {
   if (arguments.length == 2) {
-    done= roadmap;
-    roadmap= undefined;
+    done= tree;
+    tree= undefined;
   }
-  var fsRouter= new_router(roadmap)
+  var fsRouter= new_router(tree)
   serve(
     fsRouter.connect_middleware(),
     [
@@ -163,45 +159,45 @@ describe( 'FSRoute', function() {
       );
     } );
     it( 'should find code at the top level of the code branch', function(done) {
-      var roadmap= {
+      var tree= {
         hello: function (next) {
           this.res.end('world')
         }
       }
-      simple_get_test('/hello','world',roadmap,done);
+      simple_get_test('/hello','world',tree,done);
     } );
     it( 'should serve a file from the resource branch and not try to interpret is as javascript', function(done) {
       simple_get_test('/protista.js','includes algae and diatoms',done);
     } );
     it( 'should run method-specific code at the top level of the code branch', function(done) {
-      var roadmap= {
+      var tree= {
         hello: {
           $GET: function (next) {
                   this.res.end('world')
                 }
         }
       }
-      simple_get_test('/hello','world',roadmap,done);
+      simple_get_test('/hello','world',tree,done);
     } );
     it( 'should not run code that is specific to some other method', function(done) {
-      var roadmap= {
+      var tree= {
         hello: {
           $POST: function (next) {
                   this.res.end('world')
                 }
         }
       }
-      get_404_test('/hello',roadmap,done);
+      get_404_test('/hello',tree,done);
     } );
-    it( 'should automatically descend to the second level of a roadmap', function(done) {
-      var roadmap= {
+    it( 'should automatically descend to the second level of a tree', function(done) {
+      var tree= {
         foo: {
           bar: function (next) {
                   this.res.end('bas')
                 }
         }
       }
-      simple_get_test('/foo/bar','bas',roadmap,done);
+      simple_get_test('/foo/bar','bas',tree,done);
     } );
     it( 'should support two simulaneous routers', function(done) {
       var fsRouter= new_router({
