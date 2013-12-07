@@ -120,7 +120,6 @@ describe( 'FSRoute', function() {
     } );
     it( 'should return a RequestHandler constructor function', function() {
       var fsRouter= new_router()
-      fsRouter.RequestHandler.name.should.equal('RequestHandler')
       assert(_.isFunction(fsRouter.RequestHandler))
       fsRouter.should.have.property('connect_middleware')
       fsRouter.should.have.property('connect_error_handler')
