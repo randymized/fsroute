@@ -74,7 +74,7 @@ function get404(url,done) {
 }
 
 function new_router(roadmap) {
-  return new FSRoute(path.join(__dirname,'../testsite'),roadmap)
+  return new FSRoute(roadmap).set_code_and_resource_roots(path.join(__dirname,'../testsite'))
 }
 
 function simple_get_test(url,expected,roadmap,done)
@@ -229,6 +229,66 @@ describe( 'FSRoute', function() {
           },
           function(cb) {
             get('/a','b',cb)
+          },
+        ],
+        done
+      );
+    } );
+    it( 'should support two simulaneous routers, but not confuse them', function(done) {
+      var fsRouter= new_router({
+        foo: function (next) {
+                this.res.end('bar')
+              }
+      })
+      var fsRouter2= new_router({
+        a: function (next) {
+                this.res.end('b')
+              }
+      })
+
+      serve(
+        new ComposableMiddleware(
+          function(next) {
+            next()
+          },
+          fsRouter2.composable_middleware()
+        ),
+        [
+          function(cb) {
+            get404('/foo',cb)
+          },
+          function(cb) {
+            get('/a','b',cb)
+          },
+        ],
+        done
+      );
+    } );
+    it( 'should support two simulaneous routers, but not confuse them. part II', function(done) {
+      var fsRouter= new_router({
+        foo: function (next) {
+                this.res.end('bar')
+              }
+      })
+      var fsRouter2= new_router({
+        a: function (next) {
+                this.res.end('b')
+              }
+      })
+
+      serve(
+        new ComposableMiddleware(
+          function(next) {
+            next()
+          },
+          fsRouter.composable_middleware()
+        ),
+        [
+          function(cb) {
+            get('/foo','bar',cb)
+          },
+          function(cb) {
+            get404('/a',cb)
           },
         ],
         done
