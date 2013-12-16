@@ -16,6 +16,48 @@ var host = 'localhost'
 
 var FSRoute = require( '..' );
 
+// The sample tree from README.md
+var ReadmeTree= {
+  '*':function(descend) {
+    this.res.send('in x')
+  },
+  'foo.':function(descend) {
+    this.res.send('in x')
+  },
+  'foo._DELETE':function(descend) {
+    this.res.send('in x')
+  },
+  'foo/':function(descend) {
+    this.res.send('in x')
+  },
+  'foo/._DELETE':function(descend) {
+    this.res.send('in x')
+  },
+  foo:{
+    '*':function(descend) {
+      this.res.send('in x')
+    },
+    '._DELETE':function(descend) {
+      this.res.send('in x')
+    },
+    'bar._GET': function(descend) {
+      this.res.send('in GET foo.bar')
+    },
+    'bar._POST': function(descend) {
+      this.res.send('in POST foo.bar')
+    },
+    bar: function(descend) {
+      this.res.send('in foo.bar')
+    },
+    'bar.json._GET': function(descend) {
+      this.res.send('in x')
+    },
+    'bar.json': function(descend) {
+      this.res.send('in x')
+    },
+  }
+}
+
 function noop ()
 {
 }
@@ -70,7 +112,7 @@ function get404(url,done) {
 }
 
 function new_router(tree) {
-  return new FSRoute(tree).set_code_and_resource_roots(path.join(__dirname,'../testsite'))
+  return new FSRoute(tree).add_modules(path.join(__dirname,'../testsite/code'))
 }
 
 function simple_get_test(url,expected,tree,done)
@@ -89,6 +131,12 @@ function simple_get_test(url,expected,tree,done)
     ],
     done
   );
+}
+
+function readme_get_test(url,expected,done)
+{
+  debugger
+  simple_get_test(url,expected,ReadmeTree,done)
 }
 
 function get_404_test(url,tree,done)
@@ -118,9 +166,7 @@ describe( 'FSRoute', function() {
       var fsRouter= new_router()
       assert(_.isFunction(fsRouter.RequestHandler))
       fsRouter.should.have.property('connect_middleware')
-      fsRouter.should.have.property('connect_error_handler')
       fsRouter.should.have.property('composable_middleware')
-      fsRouter.should.have.property('composable_error_handler')
     } );
     it( "should start out with fsroute.left being the url's path (less leading slash)", function() {
       var fsRouter= new_router()
@@ -136,23 +182,12 @@ describe( 'FSRoute', function() {
       assert(_.isArray(left))
       left.length.should.equal(0)
     } );
-    it( 'should simply 404 if no handler in code and the path does not exist', function(done) {
+    it( 'should simply 404 if no handler for the request', function(done) {
       serve(
         new_router().connect_middleware(),
         [
           function(cb) {
-            get404('/fungi',cb)
-          },
-        ],
-        done
-      );
-    } );
-    it( 'should 404 if no handler in code and the resource is not found in the filesystem', function(done) {
-      serve(
-        new_router().connect_middleware(),
-        [
-          function(cb) {
-            get404('/fungi',cb)
+            get404('/zzyzx',cb)
           },
         ],
         done
@@ -165,39 +200,6 @@ describe( 'FSRoute', function() {
         }
       }
       simple_get_test('/hello','world',tree,done);
-    } );
-    it( 'should serve a file from the resource branch and not try to interpret is as javascript', function(done) {
-      simple_get_test('/protista.js','includes algae and diatoms',done);
-    } );
-    it( 'should run method-specific code at the top level of the code branch', function(done) {
-      var tree= {
-        hello: {
-          $GET: function (next) {
-                  this.res.end('world')
-                }
-        }
-      }
-      simple_get_test('/hello','world',tree,done);
-    } );
-    it( 'should not run code that is specific to some other method', function(done) {
-      var tree= {
-        hello: {
-          $POST: function (next) {
-                  this.res.end('world')
-                }
-        }
-      }
-      get_404_test('/hello',tree,done);
-    } );
-    it( 'should automatically descend to the second level of a tree', function(done) {
-      var tree= {
-        foo: {
-          bar: function (next) {
-                  this.res.end('bas')
-                }
-        }
-      }
-      simple_get_test('/foo/bar','bas',tree,done);
     } );
     it( 'should support two simulaneous routers', function(done) {
       var fsRouter= new_router({
@@ -290,6 +292,8 @@ describe( 'FSRoute', function() {
         done
       );
     } );
-
+    it( 'should serve /foo/bar from the README sample', function(done) {
+      readme_get_test('/foo/bar','in GET foo.bar',done);
+    } );
   } );
 } );
