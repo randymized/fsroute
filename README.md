@@ -23,6 +23,16 @@ Given a URL of `http://example.com/foo/bar` and a resource root directory of `/r
 ```
 Such a tree would probably include more than one function and a more complex tree structure.
 
+### Determinate and Indeterminate paths
+
+Most paths are determinate.  Requesting `http://example.com/foo/bar` results in the module at `/root-directory/foo/bar` being run.
+
+It is also possible to define indeterminate path handlers.  If a module is defined at `/root-directory/foo/_DEFAULT.js` or in a tree like `{foo:{'*':fn()}}` all requests starting `http://example.com/foo/`, including `http://example.com/foo/bar` or `http://example.com/foo/abc/def/ghi`, even if not explicitly defined as a determinate path will pass through that handler.
+
+If indeterminate handlers are defined for both `http://example.com/` and `http://example.com/foo/` as well as a determinate handler for `http://example.com/foo/bar`, the request will first be handled by the root directory handler, then by the `foo` directory handler before finally being handled by the determinate `http://example.com/foo/bar` handler.  This stack of handlers works as middleware.  Each is called with a `descend` callback.  The request only reaches the next handler if `descend` is called.  See the [Directory default handlers](#default) section and the [Virtual directories](#virtual) section for more information.
+
+In addition to the obvious determinate `http://example.com/foo/bar` path, there are a couple of special case definitions.  A determinate handler can be defined for `http://example.com/foo/` or for `http://example.com/foo` for cases where `foo` is both a directory and a specific resource.  Determinate handlers may also be defined for URLs with extensions, such as `http://example.com/foo/bar.css` and specific to a given HTTP method.
+
 ### URL routing guide
 
 In the table below, `fn()` is an abbreviation for `function(descend){}`. The `descend` argument is optional.  The function must either send a response to `this.res`, call `descend()` to descend to the next route handler or call `next()` to punt the request to the next middleware layer.
@@ -187,7 +197,7 @@ Although the original intent of FSRoute was that all resources, such as code fil
 
 FSRoute thus anticipates and supports parallel resource file trees.  The `/root-directory` directory in the above example might be accompanied by a `/user/me/site/resource` or even `/somewhere/else` root.  Given the `/user/me/site/resource` root directory, and the above URL, an FSRoute method would return `/user/me/site/resource/foo/bar`.  You might then append `.css` to that to arrive at the name of an actual file.
 
-### Virtual directories
+### <a name="virtual"></a>Virtual directories
 
 One significant capability associated with directory default handlers is the ability to easily define virtual directories.
 
