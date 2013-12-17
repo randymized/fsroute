@@ -39,7 +39,6 @@ In the table below, `fn()` is an abbreviation for `function(descend){}`. The `de
 |/foo/|foo/_INDEX.js|`{'foo/':fn()}`|[[5]](#slashed)
 |GET /foo/|foo/_INDEX._GET.js|`{'foo/._GET':fn()}`|[[5]](#slashed) [[2]](#method-mapping)
 |/foo/...|foo/_DEFAULT.js|`{foo:{'*':fn()}}`|[[6]](#default)
-|/foo/...|foo/_DEFAULT._GET.js|`{foo:{'*._GET':fn()}}`|[[6]](#default) [[2]](#method-mapping)
 
 Here is a tree that puts this all together:
 ```javascript
@@ -167,6 +166,8 @@ The `descend` callback is more significant for a directory default handler than 
 A handler for a directory containing resources that require greater permissions, may, for example, thus block or redirect requests from those not having adequate permission.
 
 Since `this` is shared by all handlers for a given request, values can be added or changed.  One could, for example, create a breadcrumb object in the root directory's handler and push new values into it at each level.  The common bus might also be used to maintain configuration information -- configuration that might change from one part of a site to another.
+
+Currently, HTTP method-specific directory default handlers are not supported.  The handler function may, of course, include code that is conditional upon the value of `this.req.method`.  FSRoute, however, will not select different handlers depending upon HTTP method.
 
 ### Function arguments
 
