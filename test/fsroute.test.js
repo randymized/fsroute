@@ -34,16 +34,16 @@ var ReadmeTree= {
   'foo._DELETE':function(descend) {
     this.res.send('in DELETE foo.')
   },
-  'foo/':function(descend) {
-    this.res.send('in foo/')
-  },
-  'foo/._DELETE':function(descend) {
-    this.res.send('in DELETE foo/')
-  },
   foo:{
     '*':function(descend) {
       this.stack.push('foo')
       descend()
+    },
+    '/':function(descend) {
+      this.res.send('in foo/')
+    },
+    '/._DELETE':function(descend) {
+      this.res.send('in DELETE foo/')
     },
     'bar._GET': function(descend) {
       this.res.send('in GET foo/bar')

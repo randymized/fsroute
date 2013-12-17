@@ -46,8 +46,8 @@ In the table below, `fn()` is an abbreviation for `function(descend){}`. The `de
 |GET /foo/bar.css|foo/bar.css._GET.js|`{foo:{'bar.css._GET':fn()}}`|[[3]](#url-extension) [[2]](#method-mapping)
 |/foo|foo.js|`{'foo.':fn(),foo:{...}}`|[[4]](#unslashed)
 |GET /foo|foo._GET.js|`{'foo._GET':fn(),foo:{...}}`|[[4]](#unslashed) [[2]](#method-mapping)
-|/foo/|foo/_INDEX.js|`{'foo/':fn()}`|[[5]](#slashed)
-|GET /foo/|foo/_INDEX._GET.js|`{'foo/._GET':fn()}`|[[5]](#slashed) [[2]](#method-mapping)
+|/foo/|foo/_INDEX.js|`{foo:{'/':fn()}}`|[[5]](#slashed)
+|GET /foo/|foo/_INDEX._GET.js|`{foo:{'/._GET':fn()}`|[[5]](#slashed) [[2]](#method-mapping)
 |/foo/...|foo/_DEFAULT.js|`{foo:{'*':fn()}}`|[[6]](#default)
 
 Here is a tree that puts this all together:
@@ -56,10 +56,10 @@ Here is a tree that puts this all together:
   '*':fn(),            // all requests http://example.com/... [6]
   'foo.':fn(),         // http://example.com/foo (except DELETE)[4]
   'foo._DELETE':fn(),  // POST http://example.com/foo [4][2]
-  'foo/':fn(),         // http://example.com/foo/ (except DELETE)[5]
-  'foo/._DELETE':fn(), // http://example.com/foo/ [5]
   foo:{
     '*':fn(),          // all requests http://example.com/foo/... [6]
+    '/':fn(),         // http://example.com/foo/ (except DELETE)[5]
+    '/._DELETE':fn(), // http://example.com/foo/ [5]
     'bar._GET': fn(),  // GET http://example.com/foo.bar [1][2]
     'bar._POST': fn(), // POST http://example.com/foo.bar [1][2]
     bar: fn(),         // http://example.com/foo.bar (except GET or POST) [1]
