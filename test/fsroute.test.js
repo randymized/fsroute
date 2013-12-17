@@ -19,7 +19,13 @@ var FSRoute = require( '..' );
 // The sample tree from README.md
 var ReadmeTree= {
   '*':function(descend) {
-    this.res.send('in x')
+    var res= this.res
+    var stack= this.stack= ['/']
+    var svsend= res.send
+    res.send= function(msg) {
+      svsend.call(res,stack.join(':')+':'+msg)
+    }
+    descend()
   },
   'foo.':function(descend) {
     this.res.send('in x')
@@ -35,7 +41,8 @@ var ReadmeTree= {
   },
   foo:{
     '*':function(descend) {
-      this.res.send('in x')
+      this.stack.push('foo')
+      descend()
     },
     '._DELETE':function(descend) {
       this.res.send('in x')
@@ -112,7 +119,7 @@ function get404(url,done) {
 }
 
 function new_router(tree) {
-  return new FSRoute(tree).add_modules(path.join(__dirname,'../testsite/code'))
+  return new FSRoute(tree)
 }
 
 function simple_get_test(url,expected,tree,done)
@@ -135,7 +142,6 @@ function simple_get_test(url,expected,tree,done)
 
 function readme_get_test(url,expected,done)
 {
-  debugger
   simple_get_test(url,expected,ReadmeTree,done)
 }
 
@@ -164,23 +170,9 @@ describe( 'FSRoute', function() {
     } );
     it( 'should return a RequestHandler constructor function', function() {
       var fsRouter= new_router()
-      assert(_.isFunction(fsRouter.RequestHandler))
+      assert(_.isFunction(fsRouter.requestHandler))
       fsRouter.should.have.property('connect_middleware')
       fsRouter.should.have.property('composable_middleware')
-    } );
-    it( "should start out with fsroute.left being the url's path (less leading slash)", function() {
-      var fsRouter= new_router()
-      var inst= new fsRouter.RequestHandler({req:{method:'GET',url:'/animals/vertibrates/mammals'}},noop)
-      var right= inst.right
-      assert(_.isArray(right))
-      right.join('/').should.equal('animals/vertibrates/mammals')
-    } );
-    it( 'should start out with fsroute.right being an empty array', function() {
-      var fsRouter= new_router()
-      var inst= new fsRouter.RequestHandler({req:{method:'GET',url:'/animals/vertibrates/mammals'}},noop)
-      var left= inst.left
-      assert(_.isArray(left))
-      left.length.should.equal(0)
     } );
     it( 'should simply 404 if no handler for the request', function(done) {
       serve(
@@ -232,7 +224,7 @@ describe( 'FSRoute', function() {
         done
       );
     } );
-    it( 'should support two simulaneous routers, but not confuse them', function(done) {
+    it( 'should support two simulaneous routers and not confuse them', function(done) {
       var fsRouter= new_router({
         foo: function (next) {
                 this.res.end('bar')
@@ -262,7 +254,7 @@ describe( 'FSRoute', function() {
         done
       );
     } );
-    it( 'should support two simulaneous routers, but not confuse them. part II', function(done) {
+    it( 'should support two simulaneous routers and not confuse them. part II', function(done) {
       var fsRouter= new_router({
         foo: function (next) {
                 this.res.end('bar')
@@ -293,7 +285,7 @@ describe( 'FSRoute', function() {
       );
     } );
     it( 'should serve /foo/bar from the README sample', function(done) {
-      readme_get_test('/foo/bar','in GET foo.bar',done);
+      readme_get_test('/foo/bar','/:foo:in GET foo.bar',done);
     } );
   } );
 } );
