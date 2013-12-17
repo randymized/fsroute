@@ -49,8 +49,7 @@ Here is a tree that puts this all together:
   'foo/':fn(),         // http://example.com/foo/ (except DELETE)[5]
   'foo/._DELETE':fn(), // http://example.com/foo/ [5]
   foo:{
-    '*':fn(),    // all requests (except DELETE) http://example.com/foo/... [6]
-    '._DELETE':fn(),   // all DELETE requests http://example.com/foo/... [6][2]
+    '*':fn(),          // all requests http://example.com/foo/... [6]
     'bar._GET': fn(),  // GET http://example.com/foo.bar [1][2]
     'bar._POST': fn(), // POST http://example.com/foo.bar [1][2]
     bar: fn(),         // http://example.com/foo.bar (except GET or POST) [1]
@@ -65,8 +64,7 @@ The same site implemented in individual files:
 /root-dir/_DEFAULT.js  (all requests http://example.com/... [6])
 /root-dir/foo.js       (http://example.com/foo (except DELETE)[4])
 /root-dir/foo._DELETE.js (POST http://example.com/foo [4][2])
-/root-dir/foo/_INDEX.js (http://example.com/foo/ (except DELETE)[5])
-/root-dir/foo/_INDEX._DELETE.js (http://example.com/foo/ [5])
+/root-dir/foo/_INDEX.js (http://example.com/foo/ [5])
 /root-dir/foo/_DEFAULT.js  (http://example.com/foo/... all requests (except DELETE)[6])
 /root-dir/foo/_DEFAULT._DELETE.js (all DELETE requests http://example.com/foo/... [6][2])
 /root-dir/foo/bar._GET.js  (GET http://example.com/foo.bar [1][2])

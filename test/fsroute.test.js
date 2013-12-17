@@ -5,6 +5,7 @@ var should= require('should')
 var assert= require('assert')
 var path= require('path')
 var http= require('http')
+var Url= require('url')
 var request = require('request');
 var connect= require('connect')
 var async= require('async')
@@ -28,39 +29,36 @@ var ReadmeTree= {
     descend()
   },
   'foo.':function(descend) {
-    this.res.send('in x')
+    this.res.send('in foo.')
   },
   'foo._DELETE':function(descend) {
-    this.res.send('in x')
+    this.res.send('in DELETE foo.')
   },
   'foo/':function(descend) {
-    this.res.send('in x')
+    this.res.send('in foo/')
   },
   'foo/._DELETE':function(descend) {
-    this.res.send('in x')
+    this.res.send('in DELETE foo/')
   },
   foo:{
     '*':function(descend) {
       this.stack.push('foo')
       descend()
     },
-    '._DELETE':function(descend) {
-      this.res.send('in x')
-    },
     'bar._GET': function(descend) {
-      this.res.send('in GET foo.bar')
+      this.res.send('in GET foo/bar')
     },
     'bar._POST': function(descend) {
-      this.res.send('in POST foo.bar')
+      this.res.send('in POST foo/bar')
     },
     bar: function(descend) {
-      this.res.send('in foo.bar')
+      this.res.send('in foo/bar')
     },
     'bar.json._GET': function(descend) {
-      this.res.send('in x')
+      this.res.send('in GET foo/bar.json')
     },
     'bar.json': function(descend) {
-      this.res.send('in x')
+      this.res.send('in GET foo/bar')
     },
   }
 }
@@ -130,7 +128,13 @@ function simple_get_test(url,expected,tree,done)
   }
   var fsRouter= new_router(tree)
   serve(
-    fsRouter.connect_middleware(),
+    ComposableMiddleware(
+      fsRouter.composable_middleware(),
+      function(next) {
+        if (this.stack) this.res.send('no determinate handler')
+        else next()
+      }
+    ),
     [
       function(cb) {
         get(url,expected,cb)
@@ -140,9 +144,95 @@ function simple_get_test(url,expected,tree,done)
   );
 }
 
+function simple_post_test(url,expected,tree,done)
+{
+  if (arguments.length == 3) {
+    done= tree;
+    tree= undefined;
+  }
+  var fsRouter= new_router(tree)
+  serve(
+    ComposableMiddleware(
+      fsRouter.composable_middleware(),
+      function(next) {
+        if (this.stack) this.res.send('no determinate handler')
+        else next()
+      }
+    ),
+    [
+      function(done) {
+        var options= Url.parse(fullURL(url))
+        options.method= 'POST'
+        var req= http.request(options, function (res) {
+          res.statusCode.should.equal(200);
+          var s= ''
+          res.on('error',function(e) {
+            throw e;
+          })
+          res.on('data',function(chunk) {
+            s+= chunk
+          })
+          res.on('end', function(){
+            s.should.equal(expected);
+            done();
+          })
+        })
+        req.end()
+      },
+    ],
+    done
+  );
+}
+
+function simple_delete_test(url,expected,tree,done)
+{
+  if (arguments.length == 3) {
+    done= tree;
+    tree= undefined;
+  }
+  var fsRouter= new_router(tree)
+  serve(
+    ComposableMiddleware(
+      fsRouter.composable_middleware()
+    ),
+    [
+      function(done) {
+        var options= Url.parse(fullURL(url))
+        options.method= 'DELETE'
+        var req= http.request(options, function (res) {
+          res.statusCode.should.equal(200);
+          var s= ''
+          res.on('error',function(e) {
+            throw e;
+          })
+          res.on('data',function(chunk) {
+            s+= chunk
+          })
+          res.on('end', function(){
+            s.should.equal(expected);
+            done();
+          })
+        })
+        req.end()
+      },
+    ],
+    done
+  );
+}
+
 function readme_get_test(url,expected,done)
 {
   simple_get_test(url,expected,ReadmeTree,done)
+}
+
+function readme_post_test(url,expected,done)
+{
+  simple_post_test(url,expected,ReadmeTree,done)
+}
+
+function readme_delete_test(url,expected,done)
+{
+  simple_delete_test(url,expected,ReadmeTree,done)
 }
 
 function get_404_test(url,tree,done)
@@ -285,7 +375,28 @@ describe( 'FSRoute', function() {
       );
     } );
     it( 'should serve /foo/bar from the README sample', function(done) {
-      readme_get_test('/foo/bar','/:foo:in GET foo.bar',done);
+      readme_get_test('/foo/bar','/:foo:in GET foo/bar',done);
+    } );
+    it( 'should serve POST /foo/bar from the README sample', function(done) {
+      readme_post_test('/foo/bar','/:foo:in POST foo/bar',done);
+    } );
+    it( 'should serve /foo/bar.json from the README sample', function(done) {
+      readme_get_test('/foo/bar.json','/:foo:in GET foo/bar.json',done);
+    } );
+    it( 'should serve /foo (foo as function, not object) from the README sample', function(done) {
+      readme_get_test('/foo','/:in foo.',done);
+    } );
+    it( 'should serve DELETE /foo (foo as function, not object) from the README sample', function(done) {
+      readme_delete_test('/foo','/:in DELETE foo.',done);
+    } );
+    it( 'should serve /foo/ from the README sample', function(done) {
+      readme_get_test('/foo/','/:foo:in foo/',done);
+    } );
+    it( 'should serve DELETE /foo/ from the README sample', function(done) {
+      readme_delete_test('/foo/','/:foo:in DELETE foo/',done);
+    } );
+    it( 'should find that foo/baz is not defined, but still triggers the indeterminate / and /foo handlers', function(done) {
+      readme_get_test('/foo/baz','/:foo:no determinate handler',done);
     } );
   } );
 } );
