@@ -67,6 +67,19 @@ function noop ()
 {
 }
 
+function define_router(tree,rootdir)
+{
+  if (arguments.length == 1 && _.isString(tree)) {
+    rootdir= tree;
+    tree= {};
+  }
+  var fsr= new FSRoute(tree)
+  if (rootdir) {
+    fsr.add_modules(path.resolve(__dirname,rootdir))
+  }
+  return fsr;
+}
+
 function serve(middleware,requests,done) {
   var server= http.createServer(function(req,res){
     res.send= function(status,body) {
@@ -116,17 +129,13 @@ function get404(url,done) {
   })
 }
 
-function new_router(tree) {
-  return new FSRoute(tree)
-}
-
 function simple_get_test(url,expected,tree,done)
 {
   if (arguments.length == 3) {
     done= tree;
     tree= undefined;
   }
-  var fsRouter= new_router(tree)
+  var fsRouter= define_router(tree)
   serve(
     ComposableMiddleware(
       fsRouter.composable_middleware(),
@@ -150,7 +159,7 @@ function simple_post_test(url,expected,tree,done)
     done= tree;
     tree= undefined;
   }
-  var fsRouter= new_router(tree)
+  var fsRouter= define_router(tree)
   serve(
     ComposableMiddleware(
       fsRouter.composable_middleware(),
@@ -190,7 +199,7 @@ function simple_delete_test(url,expected,tree,done)
     done= tree;
     tree= undefined;
   }
-  var fsRouter= new_router(tree)
+  var fsRouter= define_router(tree)
   serve(
     ComposableMiddleware(
       fsRouter.composable_middleware()
@@ -226,7 +235,7 @@ function fs_get_test(url,expected,tree,done)
     done= tree;
     tree= undefined;
   }
-  var fsRouter= new_router().add_modules(path.resolve(__dirname,'../testsites/foobar'))
+  var fsRouter= define_router('../testsites/foobar')
   serve(
     ComposableMiddleware(
       fsRouter.composable_middleware(),
@@ -250,7 +259,7 @@ function fs_post_test(url,expected,tree,done)
     done= tree;
     tree= undefined;
   }
-  var fsRouter= new_router().add_modules(path.resolve(__dirname,'../testsites/foobar'))
+  var fsRouter= define_router('../testsites/foobar')
   serve(
     ComposableMiddleware(
       fsRouter.composable_middleware(),
@@ -290,7 +299,7 @@ function fs_delete_test(url,expected,tree,done)
     done= tree;
     tree= undefined;
   }
-  var fsRouter= new_router().add_modules(path.resolve(__dirname,'../testsites/foobar'))
+  var fsRouter= define_router('../testsites/foobar')
   serve(
     ComposableMiddleware(
       fsRouter.composable_middleware()
@@ -356,14 +365,14 @@ describe( 'FSRoute', function() {
       assert(_.isFunction(FSRoute))
     } );
     it( 'should return a RequestHandler constructor function', function() {
-      var fsRouter= new_router()
+      var fsRouter= define_router()
       assert(_.isFunction(fsRouter.request_handler))
       fsRouter.should.have.property('connect_middleware')
       fsRouter.should.have.property('composable_middleware')
     } );
     it( 'should simply 404 if no handler for the request', function(done) {
       serve(
-        new_router().connect_middleware(),
+        define_router().connect_middleware(),
         [
           function(cb) {
             get404('/zzyzx',cb)
@@ -381,12 +390,12 @@ describe( 'FSRoute', function() {
       simple_get_test('/hello','world',tree,done);
     } );
     it( 'should support two simulaneous routers', function(done) {
-      var fsRouter= new_router({
+      var fsRouter= define_router({
         foo: function (next) {
                 this.res.end('bar')
               }
       })
-      var fsRouter2= new_router({
+      var fsRouter2= define_router({
         a: function (next) {
                 this.res.end('b')
               }
@@ -412,12 +421,12 @@ describe( 'FSRoute', function() {
       );
     } );
     it( 'should support two simulaneous routers and not confuse them', function(done) {
-      var fsRouter= new_router({
+      var fsRouter= define_router({
         foo: function (next) {
                 this.res.end('bar')
               }
       })
-      var fsRouter2= new_router({
+      var fsRouter2= define_router({
         a: function (next) {
                 this.res.end('b')
               }
@@ -442,12 +451,12 @@ describe( 'FSRoute', function() {
       );
     } );
     it( 'should support two simulaneous routers and not confuse them. part II', function(done) {
-      var fsRouter= new_router({
+      var fsRouter= define_router({
         foo: function (next) {
                 this.res.end('bar')
               }
       })
-      var fsRouter2= new_router({
+      var fsRouter2= define_router({
         a: function (next) {
                 this.res.end('b')
               }
@@ -518,14 +527,6 @@ describe( 'FSRoute', function() {
       readme_fs_delete_test('/foo/','/:fsfoo:in (fs) DELETE foo/',done);
     } );
 
-    function define_router(map,rootdir)
-    {
-      var fsr= new FSRoute(map)
-      if (rootdir) {
-        fsr.add_modules(path.resolve(__dirname,rootdir))
-      }
-      return fsr;
-    }
     function pseudo_server(router,method,url,on_send,on_404)
     {
       router.request_handler({
