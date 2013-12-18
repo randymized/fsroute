@@ -29,10 +29,18 @@ Such a tree would probably include more than one function and a more complex tre
 
 The functions in the routing tree and exported from modules in the filesystem resource directory receive one argument, `descend` and are called in a `this` context that is shared by all handlers for a given request.  The context should include a `req` request object and a `res` response object. The router will add `next` to the context, allowing exit from the router to the next middleware layer.
 
-If the path is [indeterminate](#determinate) the following strings will also be defined:
+If the path is [indeterminate](#indeterminate), `this.remainder` will be everything in the URL to the right of the handler's path.  If the handler is for `/foo/` and the URL is `/foo/a/b/c`, `this.remainder` will be `a/b/c`.
 
-- `this.prefix`: the "known" part of the URL.
-- `this.suffix`: everything to the right.  If the handler is for `http://example.com/foo/` and the URL is `http://example.com/foo/xxx/yyy`, `this.suffix` will be `/foo/` and `this.prefix` will be `xxx/yyy`.
+If you name your handler function, the handler's path can be found in `[function-name].path`.  Requesting `/foo/bar` from the following tree will result in a reply of `/foo/bar`:
+```
+{foo:
+  {
+    bar:function fn(){
+      this.res.send(fn.path)
+    }
+  }
+}
+```
 
 Request handlers must either:
 
@@ -81,7 +89,7 @@ Defines the file extensions that will be recognized as modules.  The default is 
 
 Returns the `fsRoute` object for which is was invoked, allowing chaining.
 
-### <a name="determinate"></a>Determinate and Indeterminate paths
+### <a name="determinate"></a>### <a name="indeterminate"></a>Determinate and Indeterminate paths
 
 Most paths are determinate.  Requesting `http://example.com/foo/bar` results in the module at `/root-directory/foo/bar` being run.
 

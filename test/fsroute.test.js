@@ -563,14 +563,32 @@ describe( 'FSRoute', function() {
     it( 'should support virtual directories', function(done) {
       var fsr= define_router(
         {
-          foo: {'*': function(descend) {
-            this.res.send(JSON.stringify([this.prefix,this.suffix]))
+          foo: {'*': function virt(descend) {
+            this.res.send(JSON.stringify([virt.path,this.remainder]))
           }}
         }
       )
       pseudo_server(fsr,'GET','/foo/abc/def',
         function(msg) {
           msg.should.equal('["/foo/","abc/def"]')
+          done()
+        }
+      )
+    } );
+
+    it( 'should attach path to a request handler', function(done) {
+      var fsr= define_router(
+        {foo:
+          {
+            bar:function fn(){
+              this.res.send(fn.path)
+            }
+          }
+        }
+      )
+      pseudo_server(fsr,'GET','/foo/bar',
+        function(msg) {
+          msg.should.equal('/foo/bar')
           done()
         }
       )
