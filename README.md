@@ -42,6 +42,8 @@ If you name your handler function, the handler's path can be found in `[function
 }
 ```
 
+A request handler may also have the signature of Connect middleware: `function(request,response,descend)`.
+
 Request handlers must either:
 
  - Send a response.

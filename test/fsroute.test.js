@@ -594,5 +594,23 @@ describe( 'FSRoute', function() {
       )
     } );
 
+    it( 'should support a request handler that has a connect middleware signature', function(done) {
+      var fsr= define_router(
+        {foo:
+          {
+            bar:function fn(req,res,next){
+              res.send(req.url+'!')
+            }
+          }
+        }
+      )
+      pseudo_server(fsr,'GET','/foo/bar',
+        function(msg) {
+          msg.should.equal('/foo/bar!')
+          done()
+        }
+      )
+    } );
+
   } );
 } );
