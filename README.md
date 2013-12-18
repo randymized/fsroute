@@ -21,7 +21,7 @@ Given a URL of `http://example.com/foo/bar` and a resource root directory of `/r
     }
 }
 ```
-Such a tree would probably include more than one function and a more complex tree structure.
+Such a tree would probably include more than one function and a more complex tree structure.  If both a tree and a root directory are specified, the two are merged.
 
 ### Determinate and Indeterminate paths
 

@@ -350,24 +350,6 @@ function readme_fs_delete_test(url,expected,done)
   fs_delete_test(url,expected,ReadmeTree,done)
 }
 
-function get_404_test(url,tree,done)
-{
-  if (arguments.length == 2) {
-    done= tree;
-    tree= undefined;
-  }
-  var fsRouter= new_router(tree)
-  serve(
-    fsRouter.connect_middleware(),
-    [
-      function(cb) {
-        get404(url,cb)
-      },
-    ],
-    done
-  );
-}
-
 describe( 'FSRoute', function() {
   describe( 'FSRoute()', function() {
     it( 'should be a function', function() {
@@ -535,5 +517,29 @@ describe( 'FSRoute', function() {
     it( 'should serve DELETE /foo/ from the README filesystem sample', function(done) {
       readme_fs_delete_test('/foo/','/:fsfoo:in (fs) DELETE foo/',done);
     } );
+
+    it( 'should merge tree and filesystem functions', function(done) {
+      var fsr= new FSRoute({
+        foo: {bah: function(descend) {
+          this.res.send('foobah!')
+        }}
+      })
+      .add_modules(path.resolve(__dirname,'../testsites/foobar'))
+      fsr.requestHandler({
+        req: {
+          method: 'GET',
+          url: '/foo/bah'
+        },
+        res: {
+          send: function(msg) {
+            msg.should.equal('/:fsfoo:foobah!')
+            done()
+          }
+        }
+      }, function () {
+        throw new Error('404')
+      })
+    } );
+
   } );
 } );
