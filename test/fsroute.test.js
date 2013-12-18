@@ -518,13 +518,23 @@ describe( 'FSRoute', function() {
       readme_fs_delete_test('/foo/','/:fsfoo:in (fs) DELETE foo/',done);
     } );
 
+    function define_router(map,rootdir)
+    {
+      var fsr= new FSRoute(map)
+      if (rootdir) {
+        fsr.add_modules(path.resolve(__dirname,rootdir))
+      }
+      return fsr;
+    }
     it( 'should merge tree and filesystem functions', function(done) {
-      var fsr= new FSRoute({
-        foo: {bah: function(descend) {
-          this.res.send('foobah!')
-        }}
-      })
-      .add_modules(path.resolve(__dirname,'../testsites/foobar'))
+      var fsr= define_router(
+        {
+          foo: {bah: function(descend) {
+            this.res.send('foobah!')
+          }}
+        },
+        '../testsites/foobar'
+      )
       fsr.requestHandler({
         req: {
           method: 'GET',
