@@ -526,6 +526,21 @@ describe( 'FSRoute', function() {
       }
       return fsr;
     }
+    function pseudo_server(router,method,url,on_send,on_404)
+    {
+      router.requestHandler({
+        req: {
+          method: method,
+          url: url
+        },
+        res: {
+          send: on_send
+        }
+      }, function () {
+        if (on_404) on_404()
+        else throw new Error('404')
+      })
+    }
     it( 'should merge tree and filesystem functions', function(done) {
       var fsr= define_router(
         {
@@ -535,20 +550,12 @@ describe( 'FSRoute', function() {
         },
         '../testsites/foobar'
       )
-      fsr.requestHandler({
-        req: {
-          method: 'GET',
-          url: '/foo/bah'
-        },
-        res: {
-          send: function(msg) {
-            msg.should.equal('/:fsfoo:foobah!')
-            done()
-          }
+      pseudo_server(fsr,'GET','/foo/bah',
+        function(msg) {
+          msg.should.equal('/:fsfoo:foobah!')
+          done()
         }
-      }, function () {
-        throw new Error('404')
-      })
+      )
     } );
 
   } );
