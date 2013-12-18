@@ -357,7 +357,7 @@ describe( 'FSRoute', function() {
     } );
     it( 'should return a RequestHandler constructor function', function() {
       var fsRouter= new_router()
-      assert(_.isFunction(fsRouter.requestHandler))
+      assert(_.isFunction(fsRouter.request_handler))
       fsRouter.should.have.property('connect_middleware')
       fsRouter.should.have.property('composable_middleware')
     } );
@@ -528,7 +528,7 @@ describe( 'FSRoute', function() {
     }
     function pseudo_server(router,method,url,on_send,on_404)
     {
-      router.requestHandler({
+      router.request_handler({
         req: {
           method: method,
           url: url
