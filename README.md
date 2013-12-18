@@ -6,7 +6,7 @@
 Install the module with: `npm install fsroute`
 
 ```javascript
-var fsroute = require( 'fsroute' );
+var FSRoute = require( 'fsroute' );
 ```
 
 ## Documentation
@@ -22,6 +22,59 @@ Given a URL of `http://example.com/foo/bar` and a resource root directory of `/r
 }
 ```
 Such a tree would probably include more than one function and a more complex tree structure.  If both a tree and a root directory are specified, the two are merged.
+
+### API
+
+#### Request handler functions
+
+The functions in the routing tree and exported from modules in the filesystem resource directory receive one argument, `descend` and are called in a `this` context that is shared by all handlers for a given request.  The context should include a `req` request object and a `res` response object. The router will add `next` to the context, allowing exit from the router to the next middleware layer.
+
+Request handlers must either:
+
+ - Send a response.
+ - Call the `descend` callback to pass the request on to the next handler.
+ - Call `this.next()` to signal a `not found` condition and pass the request to the next middleware layer.
+ - Call `this.next(err)` to signal an error.
+
+
+#### var fsRoute= new FSRoute(tree)
+
+Creates a new router.
+
+The tree argument is optional.  If present, it should be an object containing functions and embedded objects that define the routing to be done.  For example `{foo:{bar:function() {}}}` would define a router that directs requests for `/foo/bar` to the given function. Read on for more examples.
+
+#### fsRoute.add_modules(rootdir)
+
+Adds the modules in the directory `rootdir` and its subdirectories to the router.
+
+Returns the `fsRoute` object for which is was invoked, allowing chaining.
+
+#### fsRoute.request_handler(context,next)
+
+Handle one request. `request_handler` should be called once for each request to be routed.  The request will be routed to the function or functions from the tree or modules that are to handle the request.  The `request_handler` function is asynchronous.
+
+The handler functions will be called in the context of the `context` object.  It will be `this` in any handler function.  FSRoute expects it to include a `req` request object.  Typically, it would also include a response object, but FSRoute does not require that.  The request object must include a `method` and a `url`.
+
+If no functions are defined to handle the request, or if they all pass the request on to their `descend` callback, the `next` function will be called.
+
+#### fsRoute.connect_middleware()
+
+Convenience method for calling `request_handler` in Connect compatible middleware.
+
+Returns a middleware function that calls `request_handler`.
+
+#### fsRoute.composable_middleware()
+
+Convenience method for calling `request_handler` in [composable middleware](https://npmjs.org/package/composable-middleware).  The composable middleware `this` context will be shared context for all request handler functions.
+
+Returns a middleware function that calls `request_handler`.
+
+
+#### fsRoute.set_module_extentions(extensions)
+
+Defines the file extensions that will be recognized as modules.  The default is `js` and `coffee`.  The argument(s) should be strings without a leading dot.
+
+Returns the `fsRoute` object for which is was invoked, allowing chaining.
 
 ### Determinate and Indeterminate paths
 
