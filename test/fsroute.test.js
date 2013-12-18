@@ -560,5 +560,21 @@ describe( 'FSRoute', function() {
       )
     } );
 
+    it( 'should support virtual directories', function(done) {
+      var fsr= define_router(
+        {
+          foo: {'*': function(descend) {
+            this.res.send(JSON.stringify([this.prefix,this.suffix]))
+          }}
+        }
+      )
+      pseudo_server(fsr,'GET','/foo/abc/def',
+        function(msg) {
+          msg.should.equal('["/foo/","abc/def"]')
+          done()
+        }
+      )
+    } );
+
   } );
 } );

@@ -29,6 +29,11 @@ Such a tree would probably include more than one function and a more complex tre
 
 The functions in the routing tree and exported from modules in the filesystem resource directory receive one argument, `descend` and are called in a `this` context that is shared by all handlers for a given request.  The context should include a `req` request object and a `res` response object. The router will add `next` to the context, allowing exit from the router to the next middleware layer.
 
+If the path is [indeterminate](#determinate) the following strings will also be defined:
+
+- `this.prefix`: the "known" part of the URL.
+- `this.suffix`: everything to the right.  If the handler is for `http://example.com/foo/` and the URL is `http://example.com/foo/xxx/yyy`, `this.suffix` will be `/foo/` and `this.prefix` will be `xxx/yyy`.
+
 Request handlers must either:
 
  - Send a response.
@@ -76,7 +81,7 @@ Defines the file extensions that will be recognized as modules.  The default is 
 
 Returns the `fsRoute` object for which is was invoked, allowing chaining.
 
-### Determinate and Indeterminate paths
+### <a name="determinate"></a>Determinate and Indeterminate paths
 
 Most paths are determinate.  Requesting `http://example.com/foo/bar` results in the module at `/root-directory/foo/bar` being run.
 
@@ -258,12 +263,12 @@ Our `example.com` website might, for example, include, in addition to everything
 
 To implement this blog, we could define a default handler for the `blog` directory in the tree like `{blog:{'*':fn()}}` or in the filesystem at `/root-dir/blog/_DEFAULT.js`.  This would be invoked for any URL starting `http://example.com/blog`.  Instead of calling `descend`, this function would perform the database lookup and produce the requested page.
 
-`FSRoot` maintains two arrays in `this`: `this.left` and `this.right`.  As a request traverses the path, path elements are moved from `right` to `left`.  When our default blog handler is called with the above URL, the two would contain:
-`this.left`|`this.right`
+`FSRoot` will add two strings to `this` for indeterminate handlers: `this.prefix` and `this.suffix`.  When our default blog handler is called with the above URL, the two would contain:
+`this.prefix`|`this.suffix`
 ----|----
-`['blog']`|`['2013','12','13']`
+`'blog/'`|`'2013/12/13'`
 
-The URL components needed to query the database can thus be found in `this.right`.
+The URL components needed to query the database can thus be found in `this.suffix`.
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
