@@ -49,7 +49,7 @@ Request handlers must either:
  - Send a response.
  - Call the `descend` callback to pass the request on to the next handler.
  - Call `this.next()` to signal a `not found` condition and pass the request to the next middleware layer.
- - Call `this.next(err)` to signal an error.
+ - Call `descend(err)` or `this.next(err)` to signal an error.
 
 
 #### var fsRoute= new FSRoute(tree)

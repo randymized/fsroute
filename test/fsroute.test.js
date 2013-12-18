@@ -90,8 +90,9 @@ function pseudo_server(router,method,url,on_send,on_404)
     res: {
       send: on_send
     }
-  }, function () {
-    if (on_404) on_404()
+  }, function (err) {
+    if (err) on_send('Error: '+err)
+    else if (on_404) on_404()
     else throw new Error('404')
   })
 }
@@ -607,6 +608,30 @@ describe( 'FSRoute', function() {
       pseudo_server(fsr,'GET','/foo/bar',
         function(msg) {
           msg.should.equal('/foo/bar!')
+          done()
+        }
+      )
+    } );
+
+    it( 'should pass any errors to the next middleware layer', function(done) {
+      var fsr= define_router(
+        {foo:
+          {
+            '*': function(descend) {
+              this.res.send('Should not get here!')
+            },
+            bar:function fn(req,res,next){
+              this.res.send('Should not get here, either!')
+            }
+          },
+          '*': function(descend) {
+            descend(new Error('Testing'))
+          }
+        }
+      )
+      pseudo_server(fsr,'GET','/foo/bar',
+        function(msg) {
+          msg.should.equal('Error: Error: Testing')
           done()
         }
       )
