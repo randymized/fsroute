@@ -80,6 +80,22 @@ function define_router(tree,rootdir)
   return fsr;
 }
 
+function pseudo_server(router,method,url,on_send,on_404)
+{
+  router.request_handler({
+    req: {
+      method: method,
+      url: url
+    },
+    res: {
+      send: on_send
+    }
+  }, function () {
+    if (on_404) on_404()
+    else throw new Error('404')
+  })
+}
+
 function serve(middleware,requests,done) {
   var server= http.createServer(function(req,res){
     res.send= function(status,body) {
@@ -527,21 +543,6 @@ describe( 'FSRoute', function() {
       readme_fs_delete_test('/foo/','/:fsfoo:in (fs) DELETE foo/',done);
     } );
 
-    function pseudo_server(router,method,url,on_send,on_404)
-    {
-      router.request_handler({
-        req: {
-          method: method,
-          url: url
-        },
-        res: {
-          send: on_send
-        }
-      }, function () {
-        if (on_404) on_404()
-        else throw new Error('404')
-      })
-    }
     it( 'should merge tree and filesystem functions', function(done) {
       var fsr= define_router(
         {
