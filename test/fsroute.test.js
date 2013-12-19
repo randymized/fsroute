@@ -696,7 +696,6 @@ describe( 'FSRoute', function() {
 
     it( 'should redirect if this.add_slash_to_directory and a slash would lead to a directory', function(done) {
       var fsRouter= define_router({foo:{'/':function (){}}})
-      debugger
       serve(
         ComposableMiddleware(
           function (next){this.add_slash_to_directory= true; next()},

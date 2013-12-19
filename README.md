@@ -29,6 +29,10 @@ Such a tree would probably include more than one function and a more complex tre
 
 The functions in the routing tree and exported from modules in the filesystem resource directory receive one argument, `descend` and are called in a `this` context that is shared by all handlers for a given request.  The context should include a `req` request object and a `res` response object. The router will add `next` to the context, allowing exit from the router to the next middleware layer.
 
+The `this` context is shared among all handlers serving a given request.  It can serve as a bus, converying objects or settings from one handler to another. If FSRoute is used as middleware in [composable middleware](https://npmjs.org/package/composable-middleware), `this` will be shared among all that middleware as well.   The common bus can thus extend through several layers of middleware, including one or more FSRoute routing layers.
+
+The `descend` method moves to the next step in FSRoute, whereas `this.next()` goes to the next middleware layer.  More about this in the 'Directory Interception' section below.
+
 If the path is [indeterminate](#indeterminate), `this.remainder` will be everything in the URL to the right of the handler's path.  If the handler is for `/foo/` and the URL is `/foo/a/b/c`, `this.remainder` will be `a/b/c`.
 
 If you name your handler function, the handler's path can be found in `[function-name].path`.  Requesting `/foo/bar` from the following tree will result in a reply of `/foo/bar`:
@@ -141,7 +145,7 @@ There is no handler for a URL of `/foo`.  But since there is a handler for `/foo
 
 The request's URL as returned from Node's `url.parse`.
 
-#### this.path_in(dir)
+####<a name="indir"></a> this.path_in(dir)
 
 Given the path to a directory, returns the path of the URL in that directory.  For example, given a URL of `/foo/bar`, `this.path_in('/my/directory')` returns `/my/directory/foo/bar`
 
@@ -208,7 +212,7 @@ The same site implemented in individual files:
 
 Since the files are preloaded into a tree and merged with whatever is already in the tree, some handlers could be defined in the tree and some in the filesystem.
 
-#### <a name="simple"></a>Simple URL mapping
+#### <a name="simple"></a>Simple URL mapping (determiante)
 In the simplest case, a URL maps directly to a file's path or to the function in the tree:
 `http://example.com/foo/bar` maps to `/root-directory/foo/bar.js` or `{foo:{bar:fn()}}`.
 
@@ -216,7 +220,7 @@ The function will be called in context so that `this` is an object that is creat
 
 If a handler is defined for any directory (node) along the way, it will be invoked before this, the leaf node handler.  Each of those handlers must call their `descend` callback in order for the request to reach the leaf node handler.
 
-#### <a name="method-mapping"></a>HTTP method (GET, POST, etc) mapping
+#### <a name="method-mapping"></a>HTTP method (GET, POST, etc) mapping (determinate)
 If only [Simple URL mapping](#simple) is used, requests are routed without regard to HTTP method.  That handler would often have to respond differently depending upon whether the request is a `GET`, `POST` or of some other method.
 
 GET `http://example.com/foo/bar` maps to `/root-directory/foo/bar._GET.js` or `{foo:{'bar._GET':fn()}}`.
@@ -225,15 +229,11 @@ POST `http://example.com/foo/bar` maps to `/root-directory/foo/bar._POST.js` or 
 
 Other methods are mapped in a similar manner.  HEAD will be routed as if it were GET.
 
-If both a method mapping function and a simple URL function are defined, the method mapping function is called first.  The simple function will only be called if the method mapping function calls `descend`.
-
-So if both `/root-directory/foo/bar._GET.js` and `/root-directory/foo/bar.js` exist, the `bar._GET.js` function will be called first.  The `bar.js` function will only be called if `bar._GET.js` calls its `descend` callback.
-
-Similarly, if the tree included `{foo:{'bar._GET':fn(),bar:fn()}}`, `'bar._GET':fn()` would be called before `bar:fn()` and `bar:fn()` would only be called if `'bar._GET':fn()` called its `descend` callback.
+If both a method mapping function and a simple URL function are defined, the method mapping function is called.  The simple URL function will only be called for methods for which there is not a specific function for the method.
 
 As with a simple URL handler, the function will be called in context so that `this` is an object that is created for each request and shared by all handlers.  If the method mapping function calls its `descend` callback, both the method-mapping function and the simple URL function would be called in the same context, allowing data sharing.
 
-#### <a name="url-extension"></a>URLs with extensions
+#### <a name="url-extension"></a>Handlers for URLs with extensions (determinate)
 
 Given a URL like `http://example.com/foo/bar`, a HTML file might be served. Alternatively, a JSON representation of the underlying data might reasonably have a URL of `http://example.com/foo/bar.json`.
 
@@ -259,10 +259,8 @@ So a site serving css, js and json to go with `foo/bar`, including special handl
 }
 ```
 
-#### <a name="unslashed"></a>Directory requests
+#### <a name="unslashed"></a>Directory requests (determinate)
 We have been using a URL of `/foo/bar` in several examples above.  But what if, for the same site, a request for `/foo` or for `foo/` is received?  Special naming conventions are used to deal with requests like these where the request is for a directory.
-
-|/foo|foo.js|`{'foo.':fn(),foo:{...}}`|
 
 If the URL is `http://example.com/foo` (without a trailing slash), a file could be defined at `/root-directory/foo.js` without conflicting with the directory defined at `/root-directory/foo`.
 
@@ -276,16 +274,16 @@ But you cannot define both an object and a function at `foo` in the tree, so a s
 }
 ```
 
-#### <a name="slashed"></a>Directory requests (trailing slash)
+#### <a name="slashed"></a>Directory requests (trailing slash) (determinate)
 Naming a handler for a directory request with trailing slash, such as `/foo/` requires special naming conventions.
 
-In the tree, the function is simply keyed by the name followed by a slash as in the following tree: `{'foo/':fn()}`.
+In the tree, use a slash as a key, as in the following tree: `{foo:{'/':fn()}}`.
 
 `_INDEX` is a reserved name that designates a handler for slashed directory requests, such as a file named: `/root-directory/foo/_INDEX.js`
 
 As in other cases, it is possible to define HTTP method-specific handlers, such as `{'foo/._GET':fn()}` or `/root-directory/foo/_INDEX._GET.js`
 
-#### <a name="default"></a>Directory default handlers
+#### <a name="default"></a>Directory default (indeterminate) handlers
 
 It is possible to define functions that will be called for every request within a directory.  So in the case of a request for `http://example.com/foo/bar`, a function will be called at the root level, at the `foo` level, and finally for the specific `bar` request.
 
@@ -297,19 +295,11 @@ A handler for a directory containing resources that require greater permissions,
 
 Since `this` is shared by all handlers for a given request, values can be added or changed.  One could, for example, create a breadcrumb object in the root directory's handler and push new values into it at each level.  The common bus might also be used to maintain configuration information -- configuration that might change from one part of a site to another.
 
-Currently, HTTP method-specific directory default handlers are not supported.  The handler function may, of course, include code that is conditional upon the value of `this.req.method`.  FSRoute, however, will not select different handlers depending upon HTTP method.
-
-### Function arguments
-
-You may note in the above examples that the functions serving a given request define a single argument, `descend`.  They are also invoked so that `this` references several other objects that might be needed to serve the request.  `this.req` and `this.res` are the request and response objects.  `this.next` punts a request to the next middleware level.  `this.fsroute` is also defined, giving access to its facilities.  As you will see in a following topic, all functions serving a given request are invoked in the same `this` context, and it can then be used as a bus conveying additional data between functions.
-
-The use of `this` as a common resource to all functions serving a request, and the one-argument function, is compatible with [composable-middleware](https://github.com/randymized/composable-middleware).  The common bus can thus extend through several layers of middleware, including one or more FSRoute routing layers.
-
-The `descend` method moves to the next step in FSRoute, whereas `this.next()` goes to the next middleware layer.  More about this in the 'Directory Interception' section below.
+Currently, HTTP method-specific directory default handlers are not supported.  The handler function may, of course, include code that is conditional upon the value of `this.req.method`.
 
 ### Preloading
 
-When a root directory, such as `/root-directory` is specified, FSRoute loads all the modules found in that directory and its subdirectories and organizes them into a tree.  If both a tree and a root directory are specified, the two will be merged to produce a single tree from which requests will be served.
+When a root directory, such as `/root-directory` is specified, FSRoute loads all the modules found in that directory and its subdirectories and organizes them into a tree.  If both a tree and a root directory are specified, the two will be merged to produce a single tree.
 
 Since `require` is synchronous and because preloading reasonably should occur during server initialization, the entire preloading process is synchronous.
 
@@ -317,7 +307,7 @@ Since `require` is synchronous and because preloading reasonably should occur du
 
 Although the original intent of FSRoute was that all resources, such as code files, templates, CSS and client-side Javascript all be together in one directory, a conflict tends to arise between server-side Javascript files and those intended for the client.  There is no easy way to separate the Javascript serving requests from code meant for the client.  Measures might also need to be taken to avoid serving raw template files.
 
-FSRoute thus anticipates and supports parallel resource file trees.  The `/root-directory` directory in the above example might be accompanied by a `/user/me/site/resource` or even `/somewhere/else` root.  Given the `/user/me/site/resource` root directory, and the above URL, an FSRoute method would return `/user/me/site/resource/foo/bar`.  You might then append `.css` to that to arrive at the name of an actual file.
+The [`this.path_in(dir)`](#indir) function allows mapping URLs to files in any directory.
 
 ### <a name="virtual"></a>Virtual directories
 
@@ -327,15 +317,7 @@ Our `example.com` website might, for example, include, in addition to everything
 
 To implement this blog, we could define a default handler for the `blog` directory in the tree like `{blog:{'*':fn()}}` or in the filesystem at `/root-dir/blog/_DEFAULT.js`.  This would be invoked for any URL starting `http://example.com/blog`.  Instead of calling `descend`, this function would perform the database lookup and produce the requested page.
 
-`FSRoot` will add two strings to `this` for indeterminate handlers: `this.prefix` and `this.suffix`.  When our default blog handler is called with the above URL, the two would contain:
-`this.prefix`|`this.suffix`
-----|----
-`'blog/'`|`'2013/12/13'`
-
-The URL components needed to query the database can thus be found in `this.suffix`.
-
-## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
+`this.remainder` will contain the remainder of the URL path, that to the right of the known path.  In this blog example, then, `this.remainder` would contain `2013/12/13`.
 
 ## Release History
 _(Nothing yet)_
