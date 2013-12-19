@@ -6,6 +6,7 @@ var assert= require('assert')
 var path= require('path')
 var http= require('http')
 var Url= require('url')
+var fs= require('fs')
 var request = require('request');
 var connect= require('connect')
 var async= require('async')
@@ -14,6 +15,8 @@ var ComposableMiddleware= require('composable-middleware')
 
 var port= 8889
 var host = 'localhost'
+
+var FoobarResourceDir= path.resolve(__dirname,'../testsites/foobar')
 
 var FSRoute = require( '..' );
 
@@ -670,6 +673,22 @@ describe( 'FSRoute', function() {
       pseudo_server(fsr,'GET','/foo/bar',
         function(msg) {
           msg.should.equal('foobar!')
+          done()
+        }
+      )
+    } );
+
+    it( 'should allow finding resources in a directory based on the URLs path', function(done) {
+      var fsr= define_router({foo:{bar:function() {
+        var context= this
+        fs.readFile(this.path_in(FoobarResourceDir)+'.txt', 'utf8', function(err,data) {
+          if (err) return context.next(err)
+          context.res.send(data)
+        })
+      }}})
+      pseudo_server(fsr,'GET','/foo/bar',
+        function(msg) {
+          msg.should.equal('in bar.txt.')
           done()
         }
       )
