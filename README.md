@@ -115,6 +115,10 @@ Given the following:
 - A request for `/foo/bar` would be handled by the `foo/bar` handler
 - Since there is no handler defined for `foo/qux`, the `on_no_determinate` function would be called.
 
+#### this.parsed_url
+
+- The request's URL as returned from Node's `url.parse`.
+
 ### <a name="determinate"></a>### <a name="indeterminate"></a>Determinate and Indeterminate paths
 
 Most paths are determinate.  Requesting `http://example.com/foo/bar` results in the module at `/root-directory/foo/bar` being run.
