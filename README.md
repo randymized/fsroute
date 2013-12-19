@@ -91,6 +91,30 @@ Defines the file extensions that will be recognized as modules.  The default is 
 
 Returns the `fsRoute` object for which is was invoked, allowing chaining.
 
+#### this.on_no_determinate
+
+If an indeterminate request handler assigns a function to `this.on_no_determinate`, that function will be called whenever a request is received for which there is not a determinate handler.
+
+Given the following:
+```javascript
+      {foo:
+        {
+          '*': function(descend) {
+            this.on_no_determinate= function() {
+              this.res.send('No determinate handler')
+            }
+            descend()
+          },
+          bar:function fn(req,res,next){
+            ...
+          }
+        },
+        }
+      }
+```
+- A request for `/foo/bar` would be handled by the `foo/bar` handler
+- Since there is no handler defined for `foo/qux`, the `on_no_determinate` function would be called.
+
 ### <a name="determinate"></a>### <a name="indeterminate"></a>Determinate and Indeterminate paths
 
 Most paths are determinate.  Requesting `http://example.com/foo/bar` results in the module at `/root-directory/foo/bar` being run.

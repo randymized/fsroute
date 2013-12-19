@@ -637,5 +637,43 @@ describe( 'FSRoute', function() {
       )
     } );
 
+    var on_no_determinate_tree=
+      {foo:
+        {
+          '*': function(descend) {
+            this.on_no_determinate= function() {
+              this.res.send('No determinate handler')
+            }
+            descend()
+          },
+          bar:function fn(req,res,next){
+            this.res.send('foobar!')
+          }
+        },
+        '*': function(descend) {
+          descend()
+        }
+      }
+
+    it( 'should call context.on_no_determinate if no determinate handler is found', function(done) {
+      var fsr= define_router(on_no_determinate_tree )
+      pseudo_server(fsr,'GET','/foo/x',
+        function(msg) {
+          msg.should.equal('No determinate handler')
+          done()
+        }
+      )
+    } );
+
+    it( 'should not call context.on_no_determinate if a determinate handler is found', function(done) {
+      var fsr= define_router(on_no_determinate_tree )
+      pseudo_server(fsr,'GET','/foo/bar',
+        function(msg) {
+          msg.should.equal('foobar!')
+          done()
+        }
+      )
+    } );
+
   } );
 } );
