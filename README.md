@@ -115,9 +115,35 @@ Given the following:
 - A request for `/foo/bar` would be handled by the `foo/bar` handler
 - Since there is no handler defined for `foo/qux`, the `on_no_determinate` function would be called.
 
+`on_no_determinate` allows checking first for functions or modules to serve the request, and failing that, looking for resources, such as in the filesystem or in a database, to satisfy the request.
+
+#### this.add_slash_to_directory
+
+If `this.add_slash_to_directory` is set to a truthy value, the URL is not found and adding a slash to the URL would find a handler for the request, a redirect to that slashed URL will result.
+
+Given the following tree:
+```javascript
+{
+  foo: {
+    '/': function() {...}
+    '*': function() (
+      this.add_slash_to_directory= true;
+      descend();
+    }
+  }
+}
+```
+
+There is no handler for a URL of `/foo`.  But since there is a handler for `/foo/` and `this.add_slash_to_directory` is true because it was set in the `foo` directory default handler, a redirect to `/foo/` will result.
+`
+
 #### this.parsed_url
 
-- The request's URL as returned from Node's `url.parse`.
+The request's URL as returned from Node's `url.parse`.
+
+#### this.path_in(dir)
+
+Given the path to a directory, returns the path of the URL in that directory.  For example, given a URL of `/foo/bar`, `this.path_in('/my/directory')` returns `/my/directory/foo/bar`
 
 ### <a name="determinate"></a>### <a name="indeterminate"></a>Determinate and Indeterminate paths
 

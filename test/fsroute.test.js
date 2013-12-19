@@ -694,5 +694,28 @@ describe( 'FSRoute', function() {
       )
     } );
 
+    it( 'should redirect if this.add_slash_to_directory and a slash would lead to a directory', function(done) {
+      var fsRouter= define_router({foo:{'/':function (){}}})
+      debugger
+      serve(
+        ComposableMiddleware(
+          function (next){this.add_slash_to_directory= true; next()},
+          fsRouter.composable_middleware()
+        ),
+        [
+          function() {
+            var options= Url.parse(fullURL('/foo'))
+            options.method= 'GET'
+            var req= http.request(options, function (res) {
+              res.statusCode.should.equal(302);
+              done();
+            })
+            req.end()
+          }
+        ],
+        done
+      );
+    } );
+
   } );
 } );
