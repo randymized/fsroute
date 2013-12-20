@@ -1,6 +1,6 @@
 # fsroute [![Build Status](https://secure.travis-ci.org/randymized/fsroute.png?branch=master)](http://travis-ci.org/randymized/fsroute)
 
-> A filesystem-based router.  Resources are served from filesystem paths that correspond to the URL.  Functions may also be organized in a tree structure that corresponds to the URL.
+> FSRoute is an Express-compatible middleware router that serves resources from a tree structure and/or filesystem paths that correspond to the URL.
 
 ## _Getting Started
 Install the module with: `npm install fsroute`
