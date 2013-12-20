@@ -48,20 +48,17 @@ var ReadmeTree= {
     '/._DELETE':function(descend) {
       this.res.send('in DELETE foo/')
     },
-    'bar._GET': function(descend) {
-      this.res.send('in GET foo/bar')
-    },
     'bar._POST': function(descend) {
       this.res.send('in POST foo/bar')
     },
     bar: function(descend) {
       this.res.send('in foo/bar')
     },
-    'bar.json._GET': function(descend) {
-      this.res.send('in GET foo/bar.json')
+    'bar.json._POST': function(descend) {
+      this.res.send('in POST foo/bar.json')
     },
     'bar.json': function(descend) {
-      this.res.send('in GET foo/bar')
+      this.res.send('in foo/bar.json')
     },
   }
 }
@@ -501,13 +498,13 @@ describe( 'FSRoute', function() {
       );
     } );
     it( 'should serve /foo/bar from the README filesystem sample', function(done) {
-      readme_get_test('/foo/bar','/:foo:in GET foo/bar',done);
+      readme_get_test('/foo/bar','/:foo:in foo/bar',done);
     } );
     it( 'should serve POST /foo/bar from the README sample', function(done) {
       readme_post_test('/foo/bar','/:foo:in POST foo/bar',done);
     } );
     it( 'should serve /foo/bar.json from the README sample', function(done) {
-      readme_get_test('/foo/bar.json','/:foo:in GET foo/bar.json',done);
+      readme_get_test('/foo/bar.json','/:foo:in foo/bar.json',done);
     } );
     it( 'should serve /foo (foo as function, not object) from the README sample', function(done) {
       readme_get_test('/foo','/:in foo.',done);
@@ -526,13 +523,13 @@ describe( 'FSRoute', function() {
     } );
 
     it( 'should serve /foo/bar from the README filesystem sample', function(done) {
-      readme_fs_get_test('/foo/bar','/:fsfoo:in (fs) GET foo/bar',done);
+      readme_fs_get_test('/foo/bar','/:fsfoo:in (fs) foo/bar',done);
     } );
     it( 'should serve POST /foo/bar from the README filesystem sample', function(done) {
       readme_fs_post_test('/foo/bar','/:fsfoo:in (fs) POST foo/bar',done);
     } );
     it( 'should serve /foo/bar.json from the README filesystem sample', function(done) {
-      readme_fs_get_test('/foo/bar.json','/:fsfoo:in (fs) GET foo/bar.json',done);
+      readme_fs_get_test('/foo/bar.json','/:fsfoo:in (fs) foo/bar.json',done);
     } );
     it( 'should serve /foo (foo as function, not object) from the README filesystem sample', function(done) {
       readme_fs_get_test('/foo','/:in (fs) foo.',done);
