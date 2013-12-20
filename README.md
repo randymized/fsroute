@@ -2,7 +2,7 @@
 
 > FSRoute is an Express-compatible middleware router that serves resources from a tree structure and/or filesystem paths that correspond to the URL.
 
-## _Getting Started
+## Getting Started
 Install the module with: `npm install fsroute`
 
 ```javascript
@@ -167,7 +167,7 @@ The request's URL as returned from Node's `url.parse`.
 Given the path to a directory, returns the path of the URL in that directory.  For example, given a URL of `/foo/bar`, `this.path_in('/my/directory')` returns `/my/directory/foo/bar`
 
 ----------
-### <a name="determinate"></a>### <a name="indeterminate"></a>Determinate and Indeterminate paths
+### <a name="determinate"></a><a name="indeterminate"></a>Determinate and Indeterminate paths
 
 Most paths are determinate.  Requesting `http://example.com/foo/bar` results in the module at `/root-directory/foo/bar` being run.
 
