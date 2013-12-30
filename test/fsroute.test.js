@@ -713,5 +713,39 @@ describe( 'FSRoute', function() {
       );
     } );
 
+    it( 'should chain all indeterminate handlers for a given path', function(done) {
+      var fsr= define_router(
+        {foo:
+          {
+            '*': function(descend) {
+              this.touched.push('foo')
+              descend()
+            },
+            bar: {
+              '*': function(descend) {
+                this.touched.push('bar')
+                descend()
+              },
+              bas: function(descend) {
+                this.touched.join(',').should.equal('root,foo,bar')
+                done()
+              },
+            }
+          },
+          '*': function(descend) {
+            this.touched= ['root']
+            descend()
+          }
+        }
+      )
+      pseudo_server(fsr,'GET','/foo/bar/bas',
+        function(msg) {
+          msg.should.equal('in bar.txt.')
+          done()
+        }
+      )
+    } );
+
+
   } );
 } );
