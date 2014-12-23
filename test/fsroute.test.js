@@ -246,12 +246,8 @@ function simple_delete_test(url,expected,tree,done)
   );
 }
 
-function fs_get_test(url,expected,tree,done)
+function fs_get_test(url,expected,done)
 {
-  if (arguments.length == 3) {
-    done= tree;
-    tree= undefined;
-  }
   var fsRouter= define_router('../testsites/foobar')
   serve(
     ComposableMiddleware(
@@ -270,12 +266,8 @@ function fs_get_test(url,expected,tree,done)
   );
 }
 
-function fs_post_test(url,expected,tree,done)
+function fs_post_test(url,expected,done)
 {
-  if (arguments.length == 3) {
-    done= tree;
-    tree= undefined;
-  }
   var fsRouter= define_router('../testsites/foobar')
   serve(
     ComposableMiddleware(
@@ -310,12 +302,8 @@ function fs_post_test(url,expected,tree,done)
   );
 }
 
-function fs_delete_test(url,expected,tree,done)
+function fs_delete_test(url,expected,done)
 {
-  if (arguments.length == 3) {
-    done= tree;
-    tree= undefined;
-  }
   var fsRouter= define_router('../testsites/foobar')
   serve(
     ComposableMiddleware(
@@ -346,34 +334,19 @@ function fs_delete_test(url,expected,tree,done)
   );
 }
 
-function readme_get_test(url,expected,done)
+function tree_get_test(url,expected,done)
 {
   simple_get_test(url,expected,ReadmeTree,done)
 }
 
-function readme_post_test(url,expected,done)
+function tree_post_test(url,expected,done)
 {
   simple_post_test(url,expected,ReadmeTree,done)
 }
 
-function readme_delete_test(url,expected,done)
+function tree_delete_test(url,expected,done)
 {
   simple_delete_test(url,expected,ReadmeTree,done)
-}
-
-function readme_fs_get_test(url,expected,done)
-{
-  fs_get_test(url,expected,ReadmeTree,done)
-}
-
-function readme_fs_post_test(url,expected,done)
-{
-  fs_post_test(url,expected,ReadmeTree,done)
-}
-
-function readme_fs_delete_test(url,expected,done)
-{
-  fs_delete_test(url,expected,ReadmeTree,done)
 }
 
 describe( 'FSRoute', function() {
@@ -498,50 +471,50 @@ describe( 'FSRoute', function() {
       );
     } );
     it( 'should serve /foo/bar from the README filesystem sample', function(done) {
-      readme_get_test('/foo/bar','/:foo:in foo/bar',done);
+      tree_get_test('/foo/bar','/:foo:in foo/bar',done);
     } );
     it( 'should serve POST /foo/bar from the README sample', function(done) {
-      readme_post_test('/foo/bar','/:foo:in POST foo/bar',done);
+      tree_post_test('/foo/bar','/:foo:in POST foo/bar',done);
     } );
     it( 'should serve /foo/bar.json from the README sample', function(done) {
-      readme_get_test('/foo/bar.json','/:foo:in foo/bar.json',done);
+      tree_get_test('/foo/bar.json','/:foo:in foo/bar.json',done);
     } );
     it( 'should serve /foo (foo as function, not object) from the README sample', function(done) {
-      readme_get_test('/foo','/:in foo.',done);
+      tree_get_test('/foo','/:in foo.',done);
     } );
     it( 'should serve DELETE /foo (foo as function, not object) from the README sample', function(done) {
-      readme_delete_test('/foo','/:in DELETE foo.',done);
+      tree_delete_test('/foo','/:in DELETE foo.',done);
     } );
     it( 'should serve /foo/ from the README sample', function(done) {
-      readme_get_test('/foo/','/:foo:in foo/',done);
+      tree_get_test('/foo/','/:foo:in foo/',done);
     } );
     it( 'should serve DELETE /foo/ from the README sample', function(done) {
-      readme_delete_test('/foo/','/:foo:in DELETE foo/',done);
+      tree_delete_test('/foo/','/:foo:in DELETE foo/',done);
     } );
     it( 'should find that foo/baz is not defined, but still triggers the indeterminate / and /foo handlers', function(done) {
-      readme_get_test('/foo/baz','/:foo:no determinate handler',done);
+      tree_get_test('/foo/baz','/:foo:no determinate handler',done);
     } );
 
     it( 'should serve /foo/bar from the README filesystem sample', function(done) {
-      readme_fs_get_test('/foo/bar','/:fsfoo:in (fs) foo/bar',done);
+      fs_get_test('/foo/bar','/:fsfoo:in (fs) foo/bar',done);
     } );
     it( 'should serve POST /foo/bar from the README filesystem sample', function(done) {
-      readme_fs_post_test('/foo/bar','/:fsfoo:in (fs) POST foo/bar',done);
+      fs_post_test('/foo/bar','/:fsfoo:in (fs) POST foo/bar',done);
     } );
     it( 'should serve /foo/bar.json from the README filesystem sample', function(done) {
-      readme_fs_get_test('/foo/bar.json','/:fsfoo:in (fs) foo/bar.json',done);
+      fs_get_test('/foo/bar.json','/:fsfoo:in (fs) foo/bar.json',done);
     } );
     it( 'should serve /foo (foo as function, not object) from the README filesystem sample', function(done) {
-      readme_fs_get_test('/foo','/:in (fs) foo.',done);
+      fs_get_test('/foo','/:in (fs) foo.',done);
     } );
     it( 'should serve DELETE /foo (foo as function, not object) from the README filesystem sample', function(done) {
-      readme_fs_delete_test('/foo','/:in (fs) DELETE foo.',done);
+      fs_delete_test('/foo','/:in (fs) DELETE foo.',done);
     } );
     it( 'should serve /foo/ from the README filesystem sample', function(done) {
-      readme_fs_get_test('/foo/','/:fsfoo:in (fs) foo/',done);
+      fs_get_test('/foo/','/:fsfoo:in (fs) foo/',done);
     } );
     it( 'should serve DELETE /foo/ from the README filesystem sample', function(done) {
-      readme_fs_delete_test('/foo/','/:fsfoo:in (fs) DELETE foo/',done);
+      fs_delete_test('/foo/','/:fsfoo:in (fs) DELETE foo/',done);
     } );
 
     it( 'should merge tree and filesystem functions', function(done) {
