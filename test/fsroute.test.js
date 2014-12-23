@@ -170,13 +170,9 @@ function simple_get_test(url,expected,tree,done)
   );
 }
 
-function simple_post_test(url,expected,tree,done)
+function simple_non_get_test(source,verb,url,expected,done)
 {
-  if (arguments.length == 3) {
-    done= tree;
-    tree= undefined;
-  }
-  var fsRouter= define_router(tree)
+  var fsRouter= define_router(source)
   serve(
     ComposableMiddleware(
       fsRouter.composable_middleware(),
@@ -188,7 +184,7 @@ function simple_post_test(url,expected,tree,done)
     [
       function(done) {
         var options= Url.parse(fullURL(url))
-        options.method= 'POST'
+        options.method= verb
         var req= http.request(options, function (res) {
           res.statusCode.should.equal(200);
           var s= ''
@@ -210,40 +206,14 @@ function simple_post_test(url,expected,tree,done)
   );
 }
 
+function simple_post_test(url,expected,tree,done)
+{
+  simple_non_get_test(tree,'POST',url,expected,done)
+}
+
 function simple_delete_test(url,expected,tree,done)
 {
-  if (arguments.length == 3) {
-    done= tree;
-    tree= undefined;
-  }
-  var fsRouter= define_router(tree)
-  serve(
-    ComposableMiddleware(
-      fsRouter.composable_middleware()
-    ),
-    [
-      function(done) {
-        var options= Url.parse(fullURL(url))
-        options.method= 'DELETE'
-        var req= http.request(options, function (res) {
-          res.statusCode.should.equal(200);
-          var s= ''
-          res.on('error',function(e) {
-            throw e;
-          })
-          res.on('data',function(chunk) {
-            s+= chunk
-          })
-          res.on('end', function(){
-            s.should.equal(expected);
-            done();
-          })
-        })
-        req.end()
-      },
-    ],
-    done
-  );
+  simple_non_get_test(tree,'DELETE',url,expected,done)
 }
 
 function fs_get_test(url,expected,done)
@@ -268,70 +238,12 @@ function fs_get_test(url,expected,done)
 
 function fs_post_test(url,expected,done)
 {
-  var fsRouter= define_router('../testsites/foobar')
-  serve(
-    ComposableMiddleware(
-      fsRouter.composable_middleware(),
-      function(next) {
-        if (this.stack) this.res.send('no determinate handler')
-        else next()
-      }
-    ),
-    [
-      function(done) {
-        var options= Url.parse(fullURL(url))
-        options.method= 'POST'
-        var req= http.request(options, function (res) {
-          res.statusCode.should.equal(200);
-          var s= ''
-          res.on('error',function(e) {
-            throw e;
-          })
-          res.on('data',function(chunk) {
-            s+= chunk
-          })
-          res.on('end', function(){
-            s.should.equal(expected);
-            done();
-          })
-        })
-        req.end()
-      },
-    ],
-    done
-  );
+  simple_non_get_test('../testsites/foobar','POST',url,expected,done)
 }
 
 function fs_delete_test(url,expected,done)
 {
-  var fsRouter= define_router('../testsites/foobar')
-  serve(
-    ComposableMiddleware(
-      fsRouter.composable_middleware()
-    ),
-    [
-      function(done) {
-        var options= Url.parse(fullURL(url))
-        options.method= 'DELETE'
-        var req= http.request(options, function (res) {
-          res.statusCode.should.equal(200);
-          var s= ''
-          res.on('error',function(e) {
-            throw e;
-          })
-          res.on('data',function(chunk) {
-            s+= chunk
-          })
-          res.on('end', function(){
-            s.should.equal(expected);
-            done();
-          })
-        })
-        req.end()
-      },
-    ],
-    done
-  );
+  simple_non_get_test('../testsites/foobar','DELETE',url,expected,done)
 }
 
 function tree_get_test(url,expected,done)
