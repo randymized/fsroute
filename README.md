@@ -12,7 +12,7 @@ var FSRoute = require( 'fsroute' );
 ## Documentation
 FSRoute is an Express-compatible middleware router that serves resources from a tree structure and/or filesystem paths that correspond to the URL.
 
-Given a URL of `http://example.com/foo/bar` and a resource root directory of `/root-directory`, a module at `/root-directory/foo/bar` would be run to serve the request.  Alternatively, a number of serving functions could be gathered together in a tree.  In this case, the above request would be served from the following tree:
+Given a URL of `http://example.com/foo/bar` and a resource root directory of `/root-directory`, a module at `/root-directory/foo/bar.js` would be run to serve the request.  Alternatively, a number of serving functions could be gathered together in a tree of javascript objects.  In this case, the above request would be served from the following tree:
 ```javascript
 {
     foo: {
@@ -21,7 +21,7 @@ Given a URL of `http://example.com/foo/bar` and a resource root directory of `/r
     }
 }
 ```
-Such a tree would probably include more than one function and a more complex tree structure.  If both a tree and a root directory are specified, the two are merged.
+Such a tree would likely, in practice, include more than one function and a more complex tree structure.  If both a tree and a root directory are specified, the two are merged.
 
 ### API
 
@@ -226,7 +226,7 @@ The same site implemented in individual files:
 
 Since the files are preloaded into a tree and merged with whatever is already in the tree, some handlers could be defined in the tree and some in the filesystem.
 
-#### <a name="simple"></a>Simple URL mapping (determiante)
+#### <a name="simple"></a>Simple URL mapping (determinate)
 In the simplest case, a URL maps directly to a file's path or to the function in the tree:
 `http://example.com/foo/bar` maps to `/root-directory/foo/bar.js` or `{foo:{bar:fn()}}`.
 
