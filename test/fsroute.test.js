@@ -75,7 +75,13 @@ function define_router(tree,rootdir)
   }
   var fsr= new FSRoute(tree)
   if (rootdir) {
-    fsr.add_modules(path.resolve(__dirname,rootdir))
+    try {
+      fsr.add_modules(path.resolve(__dirname,rootdir))
+    }
+    catch (err) {
+      console.log(err)
+    }
+
   }
   return fsr;
 }
@@ -427,6 +433,34 @@ describe( 'FSRoute', function() {
     } );
     it( 'should serve DELETE /foo/ from the README filesystem sample', function(done) {
       fs_delete_test('/foo/','/:fsfoo:in (fs) DELETE foo/',done);
+    } );
+
+    it( 'should serve /foo from the cluster examples', function(done) {
+      fs_get_test('/clustered/foo','/:in (foo.js object) foo.',done);
+    } );
+    it( 'should serve /foo/ from the cluster examples', function(done) {
+      fs_get_test('/clustered/foo/','/:in (foo.js object) foo/',done);
+    } );
+    it( 'should serve /foo/bar from the cluster examples', function(done) {
+      fs_get_test('/clustered/foo/bar','/:in (fs) foo/bar',done);
+    } );
+    it( 'should serve /foo/bar.json from the cluster examples', function(done) {
+      fs_get_test('/clustered/foo/bar.json','/:in (fs) foo/bar.json',done);
+    } );
+    it( 'should serve /foo/bar.txt from the cluster examples (even though bar.txt.js is not clustered)', function(done) {
+      fs_get_test('/clustered/foo/bar.txt','/:in bar.txt.',done);
+    } );
+    it( 'should serve DELETE /foo/ from the cluster examples', function(done) {
+      fs_delete_test('/clustered/foo','/:in (foo.js object) DELETE foo.',done);
+    } );
+    it( 'should serve DELETE /foo from the cluster examples', function(done) {
+      fs_delete_test('/clustered/foo/','/:in (foo.js object) DELETE foo/',done);
+    } );
+    it( 'should serve DELETE /foo from the cluster examples', function(done) {
+      fs_post_test('/clustered/foop','/:in (foo.js object) POST foop',done);
+    } );
+    it( 'should serve /foo/bar/bas from the cluster examples. Embedding a second directory level and a default handler', function(done) {
+      fs_get_test('/clustered/foo/bar/bas','/:foobar:in (fs) /foo/bar/bas',done);
     } );
 
     it( 'should merge tree and filesystem functions', function(done) {

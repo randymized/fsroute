@@ -12,7 +12,13 @@ var FSRoute = require( 'fsroute' );
 ## Documentation
 FSRoute is an Express-compatible middleware router that serves resources from a tree structure and/or filesystem paths that correspond to the URL.
 
-Given a URL of `http://example.com/foo/bar` and a resource root directory of `/root-directory`, a module at `/root-directory/foo/bar.js` would be run to serve the request.  Alternatively, a number of serving functions could be gathered together in a tree of javascript objects.  In this case, the above request would be served from the following tree:
+### Filesystem modules
+Given a URL of `http://example.com/foo/bar` and a resource root directory of `/root-directory`, a module at `/root-directory/foo/bar.js` would serve the request. The function that is exported from that module would be called when a request for that URL was received.
+
+The root of the tree is specified by first creating an FSRoute object and then invoking its add_modules method, passing the absolute path of the root directory.
+
+### Tree of objects
+Alternatively, a number of serving functions could be gathered together in a tree of javascript objects.  In this case, the above request would be served from the following tree:
 ```javascript
 {
     foo: {
@@ -22,6 +28,54 @@ Given a URL of `http://example.com/foo/bar` and a resource root directory of `/r
 }
 ```
 Such a tree would likely, in practice, include more than one function and a more complex tree structure.  If both a tree and a root directory are specified, the two are merged.
+
+The tree of objects is passed to the FSRoute constructor.
+
+### Clustered objects
+
+Instead of exporting a function, filesystem modules may export an object. When FSRoute encounters an exported object, it will iterate through the object's keys. If the associated value is a function, the key will be appended to the module's path and treated as if a module was found at the resulting extended path.
+
+So given `/root-directory/foo.js`:
+```javascript
+module.exports= {
+  a: function() {
+    this.res.send('responds to /fooa')
+  },
+  '': function() {
+    this.res.send('special case: empty string as key, responds to /foo')
+  },
+  '/': function() {
+    this.res.send('special case: responds to /foo/')
+  },
+  '/bar': function() {
+    this.res.send('responds to /foo/bar')
+  },
+  '/*': function(descend) {
+    this.res.send('special case: called with all requests in /foo/*')
+    descend()
+  }
+}
+```
+
+If the associated object is also an object, rather than a function, its keys specify HTTP methods and the function associated with the method handles requests of that method:
+So if we replace '/bar' above with:
+```javascript
+  '/bar': {
+    GET: function() {
+        this.res.send('responds to GET /foo/bar')
+      },
+    POST: function() {
+        this.res.send('responds to POST to /foo/bar')
+      },
+    PUT: function() {
+        this.res.send('responds to PUTS to /foo/bar')
+      }
+    }
+```
+
+### Mix and match
+
+A mixture of tree objects and filesystem modules (some or all of which may contain clustered objects) is allowed. Find a mix that works for you.
 
 ### API
 
