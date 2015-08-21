@@ -157,6 +157,18 @@ Defines the file extensions that will be recognized as modules.  The default is 
 Returns the `fsRoute` object for which is was invoked, allowing chaining.
 
 ----------
+#### fsRoute.set_handler_caller(caller)
+
+This method allows adding a hook that is called whenever a request handler function is called. Any given request may result in calls to several request handler functions: one for each indeterminate step and finally one for the determinate handler. One reason one might add such a hook is to allow promise-based request handlers.
+
+The default handler_caller is:
+```javascript
+function(handler,context,descend) {
+  return handler.call(context,descend)
+}
+```
+
+----------
 #### this.on_no_determinate
 
 If an indeterminate request handler assigns a function to `this.on_no_determinate`, that function will be called whenever a request is received for which there is not a determinate handler.
