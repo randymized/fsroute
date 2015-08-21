@@ -28,21 +28,19 @@
     "test": "grunt simplemocha"
   },
   "devDependencies": {
-    "mocha": "~1.9.0",
-    "should": "~2.1.0",
-    "grunt-contrib-jshint": "~0.4.0",
-    "grunt-simple-mocha": "git://github.com/yaymukund/grunt-simple-mocha.git",
-    "grunt-contrib-watch": "~0.3.1",
-    "grunt": "~0.4.1",
-    "connect": "~2.11.1",
-    "async": "~0.2.9",
-    "request": "~2.27.0"
+    "mocha": "~2.2.5",
+    "should": "~7.0.4",
+    "grunt-contrib-jshint": "~0.11.2",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-simple-mocha": "^0.4.0",
+    "grunt": "~0.4.5",
+    "connect": "~3.4.0",
+    "async": "~1.4.2",
+    "request": "~2.61.0"
   },
   "keywords": [],
   "dependencies": {
     "composable-middleware": "~0.3.0",
-    "underscore": "~1.5.2",
-    "require-directory": "~1.2.0",
-    "send": "~0.1.4"
+    "lodash": "~3.10.1"
   }
 }

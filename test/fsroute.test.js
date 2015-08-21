@@ -10,7 +10,7 @@ var fs= require('fs')
 var request = require('request');
 var connect= require('connect')
 var async= require('async')
-var _= require('underscore')
+var _= require('lodash')
 var ComposableMiddleware= require('composable-middleware')
 
 var port= 8889
