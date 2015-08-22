@@ -2,20 +2,44 @@
 
 var should= require('should')
 var assert= require('assert')
-var FSRoute = require( '..' );
+var FSRoute = require( '..' )
+var fs= require('fs')
 
 describe( 'FSRoute', function() {
-  it( 'should return a RequestHandler constructor function', function(done) {
+  it( 'should allow hooking the call of determinate and indeterminate handlers', function(done) {
     var fsr= new FSRoute({
-      foo: function (descend) {
-        this.msg= 'hello'
-        descend()
-      }
+      '*': function () {
+        // return a 'thenable'
+        return {
+          then: function(cb) {
+            fs.readFile(__dirname+'/a.txt',function(err,content) {
+              cb(new String(content))
+            })
+          }
+        }
+      },
+      foo: function () {
+        // return a 'thenable'
+        return {
+          then: function(cb) {
+            fs.readFile(__dirname+'/a.txt',function(err,content) {
+              cb('hello '+content)
+            })
+          }
+        }
+      },
     })
-    fsr.set_handler_caller(function(handler,context,descend) {
-      handler.call(context,function (){
-        context.msg.should.equal('hello')
+    fsr.set_determinate_handler_caller(function(handler,context,descend) {
+      handler.call(context).then(function (val) {
+        val.should.equal('hello a!')
+        context.hooked_indeterminate.should.equal('a!')
         done()
+      })
+    })
+    .set_indeterminate_handler_caller(function(handler,context,descend) {
+      handler.call(context).then(function (val) {
+        context.hooked_indeterminate= val
+        descend()
       })
     })
     var req= {
@@ -25,7 +49,7 @@ describe( 'FSRoute', function() {
       }
     }
     fsr.request_handler(req,function (){
-      throw new "should not end up here"
+      throw new Error("should not end up here")
     })
   } );
 } );
